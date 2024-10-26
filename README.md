@@ -1,3 +1,5 @@
+![Layout](examples/pngs/layout.png)
+
 # LyricBar: <small style="color:grey">Minimal ~~Desktop~~ Taskbar Lyrics For *(Mainly)* Spotify </small>
 
 - ***UNDER DEVELOPMENT (maybe)***
@@ -6,30 +8,38 @@
 - <span style="color:red; font-weight:bold;">Also works for other music players! (Though I didn't try many...)</span>
 - **VERY PRETTY!**
 
-| Layout |
-|:------:|
-| ![Layout](ExampleImages/layout.png) |
-
 
 | Overview |
 |:----------:|
 | **Song/Artist Level Theme Customization** |
-| ![song_change](gifs/charlixcx_everythingisromantic.gif) |
+| ![song_change](examples/gifs/charlixcx_everythingisromantic.gif) |
 | **Easy Offset Setting & Auto Hide** |
-| ![ctrl](gifs/lanadelrey_lovesong.gif) |
+| ![ctrl](examples/gifs/lanadelrey_lovesong.gif) |
 | **Lyrics Line Filter & Reformat** |
-| ![fzl](gifs/yeule_softscars.gif) |
+| ![fzl](examples/gifs/yeule_softscars.gif) |
 | **Sufjan Stevens** |
-| ![sfj](gifs/sufjanstevens_chicago.gif) |
+| ![sfj](examples/gifs/sufjanstevens_chicago.gif) |
 
 ## Usage
 
 ### Setup
+
+#### (Optional) Spicetify Setup
+- With Spicetify, we can directly get playback information from desktop app, which provides much more precise information.
+- Installation of Spicetify: [Refer to this.](https://spicetify.app/docs/advanced-usage/installation/)
+- Add [this modified webnowplaying extension](webnowplaying.js) to the extension folder and then update and apply the config. [Refer to this.](https://spicetify.app/docs/advanced-usage/extensions)
+
+### LyricBar Setup
+
 ```
 pip install -r requirements.txt
 (proxy setting)
-python ./ui.py
+python ./main.py
 ```
+
+### Configuration
+- [Global Settings](LyricBar/globalvariables.py)
+- [Themes](LyricBar/stylesheets.py)
 
 ### Control
 
@@ -41,7 +51,7 @@ python ./ui.py
 | Scroll Up/Down | Adjust track lyrics offset |
 | Shift + Scroll Up/Down | Adjust global lyrics offset |
 
-- It should be noted that the song progress from WRT may **be within 0-1 second error**, so you probably need to adjust global offset every run. If this bothers you then maybe you should use other spotify-API-based desktop lyrics.
+- It should be noted that the song progress from WRT may **be within 0-1 second error**, so you probably need to adjust global offset every run. If this bothers you then maybe you should use **Spicetify** as playing information provider, or switch to other spotify-API-based desktop lyrics.
 
 ## Theme 
 
@@ -71,24 +81,28 @@ python ./ui.py
 
 | Default |
 |:-------:|
-| ![Default](ExampleImages/bigthief_littlethings.png) |
+| ![Default](examples/pngs/bigthief_littlethings.png) |
 
 | Example 1 | Example 2 |
 |:-----------:|:-----------:|
-| ![Example 1](ExampleImages/bjork_armyofme.png) | ![Example 2](ExampleImages/charlixcx_ithinkaboutitallthetime.png) |
+| ![Example 1](examples/pngs/bjork_armyofme.png) | ![Example 2](examples/pngs/charlixcx_ithinkaboutitallthetime.png) |
 | **Example 3** | **Example 4** |
-| ![Example 3](ExampleImages/lanadelrey_venicebitch.png) | ![Example 4](ExampleImages/rosalia_motomami.png) |
+| ![Example 3](examples/pngs/lanadelrey_venicebitch.png) | ![Example 4](examples/pngs/rosalia_motomami.png) |
 | **Example 5** | **Example 6** |
-| ![Example 5](ExampleImages/sophie_immaterial.png) | ![Example 6](ExampleImages/yeule_softscars.png) |
+| ![Example 5](examples/pngs/sophie_immaterial.png) | ![Example 6](examples/pngs/yeule_softscars.png) |
 
 - *Font not provided*
 
 
 ## Updates
 
-- 20241012
-    - Can stay on top of taskbar now
-    - Spotify API is only called to get track id for more precised lyrics matching, playback information is handled with winsdk now
+- 20241026
+    - Add support for Spicetify, mmmmmuch more precise playback information now!
+    - Fix syncedlyrics
+- 20241022
+    - Much more stable display:
+        - Auto-hiding when no music is playing
+    - Lyric searching no longer block the whole program
 - 20241015
     - AutoHide: Stay on top of taskbar, hide when mouse hover
     - LyricsCopy: Hold ctrl when entering to copy the lyrics!
@@ -100,10 +114,11 @@ python ./ui.py
             - font
             - background
             - entering animation
-- 20241022
-    - Much more stable display:
-        - Auto-hiding when no music is playing
-    - Lyric searching no longer block the whole program
+- 20241012
+    - Can stay on top of taskbar now
+    - Spotify API is only called to get track id for more precised lyrics matching, playback information is handled with winsdk now
+
+
 ## Todo
 
 - [x] Hide when hovered
@@ -112,23 +127,24 @@ python ./ui.py
 - [x] Lyric customization
 - [x] Searching lyrics blocks the whole program ....
 - [x] Display behavior is not very stable (?)
+- [x] Fix Musixmatch lyrics searching
+- [x] Get better syncing with Spicetify?
 - [ ] Long lyrics line scrollllllllllll
 - [ ] Better theme management
-- [ ] Fix Musixmatch lyrics searching
-- [ ] Get better syncing with Spicetify?
 - [ ] Peek lines without changing offset
 - [ ] Visual feedback to actions
-
+- [ ] Pack It Up! 
 
 
 ## Made With
 - PyQt5
 - pyautogui
 - pillow
-- [syrics](https://github.com/akashrchandran/Syrics)
-- [spotipy](https://github.com/spotipy-dev/spotipy)
+<!-- - [syrics](https://github.com/akashrchandran/Syrics)
+- [spotipy](https://github.com/spotipy-dev/spotipy) -->
 - [pylrc](https://github.com/doakey3/pylrc)
 - [winsdk](https://github.com/pywinrt/python-winsdk)
+- [Spicetify](https://spicetify.app)
 
 ## With Reference To
 - [This stackoverflow post](https://stackoverflow.com/questions/64290561/qlabel-correct-positioning-for-text-outline)

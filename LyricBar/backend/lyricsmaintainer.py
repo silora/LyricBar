@@ -1,13 +1,13 @@
 import logging
 import sys
-import time
+from datetime import datetime
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QMutex
-from globalvariables import GLOBAL_OFFSET, LYRIC_FOLDER, PLAYING_INFO_PROVIDER, SP_DC, THIRD_PARTY_LYRICS_PROVIDERS, USE_SPOTIFY_LYRICS
-from lyricmanager import FromSpotify, FromThirdParty, Lyrics, LyricsManager
-from nowplaying import NowPlayingSystem, PlayingStatusTrigger
-from stylesheets import STYLES, get_style
-from enum import Enum
+from ..globalvariables import GLOBAL_OFFSET, PLAYING_INFO_PROVIDER, SP_DC, SPICETIFY_PORT, THIRD_PARTY_LYRICS_PROVIDERS, USE_SPOTIFY_LYRICS
+from .lyricmanager import FromSpotify, FromThirdParty, Lyrics, LyricsManager
+from ..nowplaying import NowPlayingSystem, NowPlayingSpicetify
+from ..utils.dataclasses import PlayingStatusTrigger
+from ..stylesheets import STYLES, get_style
 
 
     
@@ -26,8 +26,6 @@ class LyricsMaintainer():
         #     self.now_playing = NowPlayingSystem(update_callback=self.update_lyrics)
         # else:
         #     NowPlayingMixed(update_callback=self.update_lyrics)
-        
-        self.now_playing = NowPlayingSystem(update_callback=self.manager_callback, sync_interval=25, offset=150)
         
         self.providers = {}
         if USE_SPOTIFY_LYRICS:
@@ -48,6 +46,13 @@ class LyricsMaintainer():
         self.callback_mutex = QMutex()
         self.lyrics_mutex = QMutex()
         
+        
+        if PLAYING_INFO_PROVIDER == "Spicetify":
+            self.now_playing = NowPlayingSpicetify(socket_port=SPICETIFY_PORT, update_callback=self.manager_callback, offset=800)
+        else:
+            self.now_playing = NowPlayingSystem(update_callback=self.manager_callback, sync_interval=25, offset=0)
+        
+    def start(self):
         self.now_playing.start_loop()
         
     @property
@@ -70,7 +75,7 @@ class LyricsMaintainer():
             return None
         if not self.now_playing.is_playing:
             return None
-        l = self.lyrics.get_line_with_timestamp(int(time.time()*1000) - self.now_playing.current_begin_time - self.global_offset)
+        l = self.lyrics.get_line_with_timestamp(datetime.now().timestamp()*1000 - self.now_playing.current_begin_time - self.global_offset)
         if l:
             return l
         return None

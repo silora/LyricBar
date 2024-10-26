@@ -1,7 +1,7 @@
 import math
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import Qt, QSize, pyqtProperty
+from PyQt5.QtGui import QBrush, QFontMetrics, QPainter, QPainterPath, QPen
         
 class OutlinedLabel(QLabel):
     
@@ -54,6 +54,16 @@ class OutlinedLabel(QLabel):
         f.setWeight(value)
         self.setFont(f)
         
+    @pyqtProperty(bool)
+    def font_italic(self):
+        return self.font().italic()
+    
+    @font_italic.setter
+    def font_italic(self, value):
+        f = self.font()
+        f.setItalic(value)
+        self.setFont(f)
+    
     def scaledOutlineMode(self):
         return self.mode
 
@@ -93,7 +103,7 @@ class OutlinedLabel(QLabel):
             f = self.font()
             f.setPixelSize(self.font_size)
             self.setFont(f)
-        tr = metrics.boundingRect(self.text()).adjusted(0, 0, w, w)
+        tr = metrics.boundingRect(self.text()).adjusted(0, 0, int(w), int(w))
         if self.indent() == -1:
             if self.frameWidth():
                 indent = (metrics.boundingRect('x').width() + w * 2) / 2

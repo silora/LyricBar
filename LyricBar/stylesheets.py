@@ -1,6 +1,6 @@
 
 import regex as re
-from lyricmanager import TrackInfo
+from .utils.dataclasses import TrackInfo
 
 def yeule_style(line):
     original = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -66,6 +66,7 @@ STYLES = {
         "font-family": "Arial",
         "font-size": "30px",
         "font-weight": "bold",
+        "font-italic": False,
         
         
         "line-color": "#7c7a77",
@@ -131,6 +132,19 @@ STYLES = {
 
         "rule": lambda track: (track.artist.lower() == "charli xcx" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["crash", "new shapes", "good ones", "constant repeat", "beg for you", "move me", "baby", "lightning", "every rule", "yuck", "used to know me", "twice", "selfish girl", "how can i not know what i need right now", "sorry if i hurt you", "what you think about me"]]))
     }, 
+    "pop2": {
+        "font-color": "#c2aecc",
+        "font-family": "Neoneon",
+        "font-size": "35px",
+        
+        "line-width": 0,
+        
+        "shadow-color": "#c2aecc",
+        "shadow-radius": 10,
+        
+        "rule": lambda track: (track.artist.lower() == "charli xcx" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["backseat", "out of my head", "lucky", "tears", "i got it", "femmebot", "delicious", "unlock it", "porsche", "track 10"]]))
+        
+    },
     "vroom vroom": {
         "font-color": "#0000000099",
         "font-family": "Rawhide Raw 2012",
@@ -216,6 +230,11 @@ STYLES = {
     },
     "honeymoon": {
         "font-family": "Joanna Solotype CG",
+        "font-size": "50px",
+        
+        "line-width": 0,
+        
+        "use-shadow": False,
         
         "rule": lambda track: (track.artist.lower() == "lana del rey" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["honeymoon", "music to watch boys to", "terrence loves you", "god knows i tried", "high by the beach", "art deco", "burnt norton", "religion", "salvatore", "the blackest day", "24", "swan song", "don't let me be misunderstood"]]) or track.title.lower().replace("‘", "'").replace("’", "'") in ["freak"])
     },
@@ -338,9 +357,26 @@ STYLES = {
         "rule": lambda track: (track.artist.lower() == "fka twigs" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["eusexua", "perfect stranger"]])),
         
         "format": lambda line: line.upper().replace("‘", "").replace("’", "").replace("'", "")
-        
     },
-    
+    "something to give each other": {
+        "background-color": "qradialgradient(spread:pad, cx:0.5, cy:1, radius:0.8, fx:0.5, fy:0.5, stop:0 #e0c000, stop:0.7 #e0edaa, stop:1 #00000000)",
+        
+        "font-family": "Helvetica",
+        "font-weight": "black",
+        "font-italic": True,
+        "font-color": "#dc010288",
+        
+        "line-width": 1,
+        "line-color": "#dc0102",
+        
+        "shadow-color": "#dc0102",
+        # "shadow-offset": [0, 10],
+        "shadow-radius": 40,
+        
+        "rule": lambda track: (track.artist.lower() == "troye sivan" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["rush", "what's the time where you are?", "one of your girls", "in my room", "still got it", "can't go back, baby", "got me started", "silly", "honey", "how to stay with you"]])),
+        
+        "format": lambda line: "⚡" + line.upper() + "⚡"
+    },
     
     
     

@@ -3,13 +3,14 @@ import json
 import logging
 import os
 import re
-import syncedlyricspatch as syncedlyrics
-from PyQt5.QtCore import pyqtSignal, QThread
+import syncedlyrics
+from ..utils.syncedlyricspatch import *
+from PyQt5.QtCore import QThread
 from pylrc.parser import synced_line_regex, validateTimecode
 from syrics.api import Spotify as LyricsSpotify
 
-from globalvariables import SP_DC
-from nowplaying import TrackInfo
+from ..globalvariables import SP_DC
+from ..utils.dataclasses import TrackInfo
 
 @dataclass
 class LyricLine:
@@ -160,14 +161,9 @@ class FromThirdParty(LyricsProvider):
     def get_lyrics(self, track: TrackInfo) -> Lyrics:
         lrc = None
         try:
-            lrc = syncedlyrics.search(f"{track.title} {track.artist}", allow_plain_format=False, providers=self.third_parties, enhanced=False)
+            lrc = syncedlyrics.search(track, allow_plain_format=False, providers=self.third_parties, enhanced=False)
         except Exception as e:
-                logging.error(e)
-        if lrc is None:
-            try:
-                lrc = syncedlyrics.search(f"{track.artist} {track.title}", allow_plain_format=False, providers=self.third_parties, enhanced=False)
-            except Exception as e:
-                logging.error(e)
+            logging.error(e)
         if lrc is None:
             return None
         lyrics = Lyrics.from_lrc(lrc, track)

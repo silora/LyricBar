@@ -1,23 +1,23 @@
 import sys
-import time
-import traceback
 
-from pynput.mouse import Controller
-from PyQt5.QtCore import (QMutex, QObject, QPropertyAnimation, Qt, QThread,
-                          QTime, QTimer, QPoint, pyqtSignal, pyqtProperty, QRect)
-from PyQt5.QtGui import QColor, QCursor, QKeySequence, QMouseEvent, QPalette, QPixmap
-from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QFrame,
-                             QGraphicsDropShadowEffect, QGraphicsOpacityEffect,
-                             QLabel, QShortcut, QVBoxLayout, QWidget)
+from PyQt5.QtCore import QPropertyAnimation, Qt, QTimer
+from PyQt5.QtGui import QColor, QCursor, QPixmap
+from PyQt5.QtWidgets import (
+    QApplication,
+    QDesktopWidget,
+    QFrame,
+    QGraphicsDropShadowEffect,
+    QLabel,
+    QWidget,
+)
 
-from globalvariables import TAKSBAR_HEIGHT
-from label import OutlinedLabel
-from lyricmanager import FromSpotify, LyricsManager
-from lyricsmaintainer import LyricsMaintainer
+from ..globalvariables import TAKSBAR_HEIGHT
+from .components.outlinedlabel import OutlinedLabel
+from ..backend.lyricsmaintainer import LyricsMaintainer
 
 
-from fauxtaskbar import FauxTaskbar, sample_colors_from_geometry
-from nowplaying import PlayingStatusTrigger
+from .components.fauxtaskbar import FauxTaskbar
+from ..utils.dataclasses import PlayingStatusTrigger
 
 
 class LyricsDisplay(QWidget):
@@ -40,10 +40,6 @@ class LyricsDisplay(QWidget):
         self.label.setGeometry(0, 0, self.width(), self.height())
         self.show()
         
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.updateLyrics)
-        self.timer.start(100) 
-        
         self.setMouseTracking(True)
         
         self.displaying_line = None
@@ -59,6 +55,12 @@ class LyricsDisplay(QWidget):
         self.sustain = None
         
         self.lyric_maintainer = LyricsMaintainer(self.maintainer_callback)
+        
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.updateLyrics)
+        self.timer.start(100) 
+        
+        self.lyric_maintainer.start()
 
     def copyLyricsToClipboard(self):
         clipboard = QApplication.clipboard()
@@ -104,6 +106,7 @@ class LyricsDisplay(QWidget):
             self.label.font_weight = 75
         elif style['font-weight'] == "black":
             self.label.font_weight = 87
+        self.label.font_italic = style['font-italic']
         self.pad.setStyleSheet(f"background-color: {('rgba' + str(style['background-color'])) if isinstance(style['background-color'], tuple) else style['background-color']}" if style["background-color"] != "transparent" else "")
         if "background-image"  in style:
             image = QPixmap(style["background-image"])
@@ -250,7 +253,7 @@ class LyricsDisplay(QWidget):
             self.lyric_maintainer.track_offset += e.angleDelta().y()
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv)
     ex = LyricsDisplay()
     sys.exit(app.exec_())

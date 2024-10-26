@@ -1,6 +1,6 @@
-spotipy
-syrics
+syncedlyrics
 pylrc
 PyQt5
 pyautogui
 pillow
+websocket_server
