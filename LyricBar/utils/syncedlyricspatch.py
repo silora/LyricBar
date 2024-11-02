@@ -40,7 +40,7 @@ def _get_best_match_with_length(
     search_term,
     string_key,
     length_key,
-    min_score = 80,
+    min_score = 60,
 ):
     if not results:
         return None
@@ -84,10 +84,8 @@ def _get_lrc_musixmatch(self, t):
     if track["track"]["instrumental"] == 1:
         return INSTRUMENTAL_LRC
     track_id = track["track"]["track_id"]
-    if self.enhanced:
-        return self.get_lrc_word_by_word(track_id) or self.get_lrc_by_id(track_id)
-    else:
-        return self.get_lrc_by_id(track_id)
+    lrc = self.get_lrc_by_id(track_id)
+    return lrc.synced if lrc else None
 Musixmatch.get_lrc = _get_lrc_musixmatch
 
 def _get_lrc_lrclib(self, t):
@@ -127,7 +125,8 @@ def _get_lrc_netease(self, t):
     track = self.search_track(t)
     if not track:
         return None
-    return self.get_lrc_by_id(track["id"])
+    lrc = self.get_lrc_by_id(track["id"])
+    return lrc.synced if lrc else None
 NetEase.get_lrc = _get_lrc_netease
 
 def _get_lrc_deezer(self, t):
@@ -145,7 +144,7 @@ def _get_lrc_megalobiz(self, t):
     search_term = f"{t.title} {t.artist}"
     url = self.SEARCH_ENDPOINT.format(q=search_term.replace(" ", "+"))
 
-    def _href_match(h: Optional[str]):
+    def href_match(h: Optional[str]):
         if h and h.startswith("/lrc/maker/"):
             return True
         return False

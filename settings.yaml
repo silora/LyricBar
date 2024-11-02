@@ -1,0 +1,44 @@
+Proxy:
+  Host: ""
+  Port: 0
+
+Apperance:
+  Taskbar Height: 70
+  # Adjust this so the system tray icons are not covered
+  Leftout Width: 500
+
+Lyrics:
+  Folder: lyrics
+
+  Global Offset: 0
+
+  # Available Provider Options: Spotify, Lrclist, NetEase, Musixmatch, Deezer, Megalobiz
+  # (Note) Track ID is needed to get lyrics from Spotify. Spotify lyrics can be out of sync at a lot of times, but it prevents mixing up lyrics from different versions.
+  # Spotify lyrics are prioritized over other providers. Other providers are prioritized in the order they are listed.
+  Providers:
+    - Lrclib
+    - NetEase
+    - Musixmatch
+    - Deezer
+    - Megalobiz
+  # If use Spotify lyrics, you need to set SP_DC
+  SP_DC: ""
+
+Playing Info:
+  # Available Playing Info Options: Spicetify, System
+  # System: Use Windows Runtime API to get the current playing track. You can call them as frequently as you want, but the actual song progress information is updated every four second (at least on my pc, you are welcomed to test it on yours. I dont know whether its a winsdk thing). Song changes are instant, pausing can sometimes be delayed for whatever reason. Support many audio players. DOES NOT PROVIDE TRACK ID.
+  # Spicetify: (Recommended) Uses Spicetify websocket to get the current playing track. It's much more responsive than Spotify API, but it's only available for Spotify desktop client with Spicetify installed. DOES PROVIDE TRACK ID.
+  Provider: System
+  # If use System, you need to set the tracking application
+  Tracking App: Spotify.exe
+  # If use Spicetify, you need to set the Spicetify websocket port
+  Spicetify Port: 8974
+
+Themes:
+  Folder: themes
+
+  # Format "{relative file path minus '.py'} - {theme name}"
+  Default: "Default - LyricBar theme"
+
+
+

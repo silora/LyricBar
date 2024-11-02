@@ -42,16 +42,28 @@ class WNPReduxWebSocket {
 		uid: "",
 		begintime: 0
 	};
+	isResetting = false;
 
 	constructor() {
 		this.init();
 
-		Spicetify.Player.addEventListener("songchange", ({ data }) => this.updateSpicetifyInfo(data));
+		Spicetify.Player.addEventListener("songchange", ({ data }) => this.restartPlayer(data));
 		Spicetify.Player.addEventListener("onplaypause", ({ data }) => this.updateSpicetifyInfo(data));
+		Spicetify.Player.addEventListener("onprogress", ({ data }) => this.updateSpicetifyInfo(data));
+	}
+
+	restartPlayer(data) {
+		this.isResetting = true;
+		Spicetify.Player.pause();
+		Spicetify.Player.seek(0);
+		Spicetify.Player.play();
+		this.isResetting = false;
+		this.updateSpicetifyInfo(Spicetify.Player.data);
 	}
 
 	updateSpicetifyInfo(data) {
 		if (!data?.item?.metadata) return;
+		if (this.isResetting) return;
 		const meta = data.item.metadata;
 		this.spicetifyInfo.title = meta.title;
 		this.spicetifyInfo.album = meta.album_title;
@@ -61,7 +73,7 @@ class WNPReduxWebSocket {
 		// this.spicetifyInfo.shuffle = data.shuffle;
 		this.spicetifyInfo.artist = meta.artist_name;
 		this.spicetifyInfo.uid = data.item.uri.split(":").pop(-1);
-		this.spicetifyInfo.begintime = Date.now() - Spicetify.Player.getProgress();
+		this.spicetifyInfo.begintime = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
 		// let artistCount = 1;
 		// while (meta[`artist_name:${artistCount}`]) {
 		// 	this.spicetifyInfo.artist += `, ${meta[`artist_name:${artistCount}`]}`;
@@ -248,7 +260,7 @@ function SendUpdateLegacy(self) {
 	// self.spicetifyInfo.position = Spicetify.Player.getProgress();
 	// self.spicetifyInfo.volume = Math.round(Spicetify.Player.getVolume() * 100);
 	if (self.spicetifyInfo.state === "PLAYING")
-		self.spicetifyInfo.begintime = Date.now() - Spicetify.Player.getProgress();
+		self.spicetifyInfo.begintime = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
 
 	const update = {};
 	let need_update = false;

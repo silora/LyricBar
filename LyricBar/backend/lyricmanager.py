@@ -4,13 +4,13 @@ import logging
 import os
 import re
 import syncedlyrics
-from ..utils.syncedlyricspatch import *
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, QMutex, QObject, pyqtSignal
 from pylrc.parser import synced_line_regex, validateTimecode
 from syrics.api import Spotify as LyricsSpotify
 
 from ..globalvariables import SP_DC
 from ..utils.dataclasses import TrackInfo
+from ..utils.syncedlyricspatch import *
 
 @dataclass
 class LyricLine:
@@ -38,8 +38,8 @@ class LyricLine:
     @classmethod
     def from_formatted_time(cls, time, text):
         if "." in time:
-            minutes, seconds, milliseconds = re.match(r"\[(\d+):(\d+).(\d+)\]", time).groups()
-            return cls(int(minutes) * 60000 + int(seconds) * 1000 + int(milliseconds), text)
+            minutes, seconds = re.match(r"\[(\d+):(\d+\.\d+)\]", time).groups()
+            return cls(int(minutes) * 60000 + float(seconds) * 1000, text)
         else:
             minutes, seconds = re.match(r"\[(\d+):(\d+)\]", time).groups()
             return cls(int(minutes) * 60000 + int(seconds) * 1000, text)
@@ -172,8 +172,8 @@ class FromThirdParty(LyricsProvider):
         return lyrics
 
 class LyricsThread(QThread):
-
-    def __init__(self, maintainer, track, holder, callback=None, lock=None, force_refresh=False, source=None):
+    # start_signal = pyqtSignal()
+    def __init__(self, maintainer, track, holder, callback=None, holder_lock=None, force_refresh=False, source=None):
         super().__init__()
         self.maintainer = maintainer
         self.track = track
@@ -181,24 +181,40 @@ class LyricsThread(QThread):
         self.source = source
         self.callback = callback
         self.holder = holder
-        self.lock = lock
+        # self.lock = lock
+        self.holder_lock = holder_lock
+        self.get_lock = False
         self.cancelled = False
+        # self.start_signal.connect(self.run)
+        # self.waiting_counter = 0
         
     def cancel(self):
         self.cancelled = True
         
     def gracefully_out(self):
-        if self.lock is not None:
-            self.lock.unlock()
+        # if self.get_lock and self.lock is not None:
+        #     print("ENDING SEARCH", self.track)
+        #     self.lock.unlock()
+        #     print("ENDING SEARCH 1", self.track)
+        # if self.cancelled:
         if self.holder is not None:
+            self.holder_lock.lock()
             self.holder.remove(self)
+            self.holder_lock.unlock()
         return
 
     def run(self):
-        while self.lock.tryLock(timeout=1000):
-            if self.cancelled:
-                self.gracefully_out()
-                return
+        print("TRYING SEARCH", self.track)
+        # while self.waiting_counter < 50 and not self.lock.tryLock(100):
+        #     self.waiting_counter += 1
+        #     if self.cancelled:
+        #         self.gracefully_out()
+        #         return
+        # if self.waiting_counter >= 50:
+        #     self.gracefully_out()
+        #     return
+        # print("STARTING SEARCH", self.track)
+        # self.get_lock = True
         if self.cancelled:
             self.gracefully_out()
             return
@@ -214,7 +230,7 @@ class LyricsThread(QThread):
                         self.gracefully_out()
                         return
                     if self.callback is not None:
-                        self.callback((ret, self.track))
+                        self.callback((ret, self.track))         
                         self.gracefully_out()
                     return
             if os.path.exists(f"{self.maintainer.cache_dir}/{self.track.hash_id}.json"):
@@ -266,8 +282,10 @@ class LyricsManager():
         
         self.lyrics_gripper = set()
         self.lyrics_track = None
+        
+        self.gripper_lock = QMutex()
     
-    def get_lyrics(self, track: TrackInfo, callback: callable = None, lock = None, force_refresh=False, source=None):
+    def get_lyrics(self, track: TrackInfo, callback: callable = None, force_refresh=False, source=None):
         print("GETTING LYRICS FOR ", str(track), "FROM ", source)
         
         found = False
@@ -279,9 +297,11 @@ class LyricsManager():
         if found:
             return
         
-        lg = LyricsThread(self, track, self.lyrics_gripper, callback, lock, force_refresh, source)
+        lg = LyricsThread(self, track, self.lyrics_gripper, callback, self.gripper_lock, force_refresh, source)
         self.lyrics_gripper.add(lg)
+        # lg.start_signal.emit()
         lg.start()
+        # print("command sent")
         
     def save_lyrics(self, track: TrackInfo, lyrics: Lyrics):
         if lyrics is None:
@@ -289,7 +309,7 @@ class LyricsManager():
         if track.id is not None:
             lyrics.to_json_file(f"{self.cache_dir}/{track.id}.json")
         lyrics.to_json_file(f"{self.cache_dir}/{track.hash_id}.json")
-        
+        # pass
     # def get_lyrics_async(self, track: TrackInfo, callback: callable = None, force_refresh=False, source=None):
     #     while self.gripper_cancelled:
     #         asyncio.sleep(0.5)

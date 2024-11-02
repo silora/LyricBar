@@ -39,7 +39,7 @@ class TrackInfo:
     
     def get_hash(self):
         h = hashlib.new('sha256')
-        h.update(f'{self.artist} - {self.title}'.encode())
+        h.update(f'{self.artist} - {self.title} - {self.length}'.encode())
         return h.hexdigest()
 
     @property

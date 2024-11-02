@@ -45,7 +45,7 @@ class NowPlayingSystem(NowPlaying):
 
     def sync(self):
         logging.debug("TRY SYNC WITH SYSTEM")
-        if not self.sync_mutex.tryLock(timeout=0):
+        if not self.sync_mutex.tryLock(0):
             logging.debug("SYNCING SKIPPED")
             return
         info = asyncio.run(self.get_now_playing_info())
@@ -58,7 +58,6 @@ class NowPlayingSystem(NowPlaying):
                 self.update_callback(PlayingStatusTrigger.PAUSE)
             self.sync_mutex.unlock()
             return
-        self.is_initialized = True
         if info is None and self.playing_info is not None:
             logging.info("SPOTIFY DOWN")
             self.is_initialized = True
@@ -72,7 +71,7 @@ class NowPlayingSystem(NowPlaying):
             return
         if not info.is_playing and (self.playing_info is not None and self.playing_info.is_playing):
             logging.info("PAUSING")
-            self.playing_info = info
+            self.playing_info.is_playing = False
             if self.update_callback is not None:
                 self.update_callback(PlayingStatusTrigger.PAUSE)
             self.sync_mutex.unlock()
@@ -89,7 +88,7 @@ class NowPlayingSystem(NowPlaying):
             self.playing_info = info
             if self.update_callback is not None:
                 self.update_callback(PlayingStatusTrigger.RESUME)
-        if self.playing_info and self.update_check(self.playing_info, info):
+        if info.is_playing and self.playing_info and self.update_check(self.playing_info, info):
             logging.info("SYNCING")
             self.playing_info = info
         self.sync_mutex.unlock()
@@ -101,7 +100,7 @@ class NowPlayingSystem(NowPlaying):
         logging.debug("GETTING APP ID")
         sessions = self.manager.get_sessions()
         sessions = [session.source_app_user_model_id for session in sessions]
-        print(sessions)
+        # print(sessions)
         if not any([self.tracking_app in _ for _ in sessions]):
             return None
         amuids = subprocess.check_output(
@@ -116,15 +115,17 @@ class NowPlayingSystem(NowPlaying):
         return None
 
     async def get_now_playing_info(self):
-        # if self.spotify_id is None:
-        #     logging.debug("SPOTIFY DOWN")
-        #     self.spotify_id = await self.get_app_id()
+        if self.app_id is None:
+            logging.debug("SPOTIFY DOWN")
+            self.app_id = await self.get_app_id()
+        # print("GETTING NOW PLAYING INFO")
         if self.session is None:  
             sessions = self.manager.get_sessions()
             self.session = next(
                 filter(lambda s: s.source_app_user_model_id == self.app_id, sessions),
                 None,
             )
+        # print(self.session, self.app_id)
         if self.session is not None:
             info_dict = dict()
             try:
@@ -181,7 +182,7 @@ class NowPlayingSystem(NowPlaying):
                 #     else None
                 # ),
                 current_begin_time=(
-                    ((info_dict["last_updated_time"] - info_dict["position"]).timestamp()*1000 + self.offset) if "position" in info_dict else None
+                    ((info_dict["last_updated_time"] - info_dict["position"]).timestamp()*1000 + self.offset) if ("position" in info_dict and "last_updated_time" in info_dict) else None
                 ),
                 is_playing=(info_dict["playback_status"] == 4),
                 last_updated_time=datetime.timestamp(info_dict["last_updated_time"]),

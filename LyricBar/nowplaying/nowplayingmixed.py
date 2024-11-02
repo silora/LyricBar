@@ -45,7 +45,7 @@ class NowPlayingMixed(NowPlaying):
         #         f"NOW PLAYING: {self.playing_info.current_track_artist} - {self.playing_info.current_track_title} ({int(time.time()*1000) - self.playing_info.current_begin_time}/{self.playing_info.current_track_length})"
         #     )
         logging.info("TRY SYNC WITH SYSTEM")
-        if not self.sync_mutex.tryLock(timeout=0):
+        if not self.sync_mutex.tryLock(0):
             logging.info("SYNCING SKIPPED")
             return
         info = asyncio.run(self.system.get_now_playing_info())

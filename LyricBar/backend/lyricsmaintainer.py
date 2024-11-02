@@ -4,13 +4,20 @@ from datetime import datetime
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QMutex
 from ..globalvariables import GLOBAL_OFFSET, PLAYING_INFO_PROVIDER, SP_DC, SPICETIFY_PORT, THIRD_PARTY_LYRICS_PROVIDERS, USE_SPOTIFY_LYRICS
-from .lyricmanager import FromSpotify, FromThirdParty, Lyrics, LyricsManager
+from .lyricmanager import FromSpotify, FromThirdParty, LyricLine, Lyrics, LyricsManager
 from ..nowplaying import NowPlayingSystem, NowPlayingSpicetify
 from ..utils.dataclasses import PlayingStatusTrigger
-from ..stylesheets import STYLES, get_style
+from ..themes import STYLES, get_style
 
 
-    
+# class debugQMutex(QMutex):
+#     def tryLock(self, timeout=0):
+#         ret = super().tryLock(timeout)
+#         print("TRY LOCK: ", ret)
+#         return ret
+#     def unlock(self):
+#         print("UNLOCK")
+#         return super().unlock()
 
 
 class LyricsMaintainer():
@@ -48,9 +55,11 @@ class LyricsMaintainer():
         
         
         if PLAYING_INFO_PROVIDER == "Spicetify":
-            self.now_playing = NowPlayingSpicetify(socket_port=SPICETIFY_PORT, update_callback=self.manager_callback, offset=800)
+            self.now_playing = NowPlayingSpicetify(socket_port=SPICETIFY_PORT, update_callback=self.manager_callback, offset=120)
         else:
             self.now_playing = NowPlayingSystem(update_callback=self.manager_callback, sync_interval=25, offset=0)
+            
+        self.current_line = None
         
     def start(self):
         self.now_playing.start_loop()
@@ -65,23 +74,51 @@ class LyricsMaintainer():
         self._global_offset = value
     
     @property
+    def progress(self):
+        if not self.now_playing.is_playing:
+            return -1
+        if not self.now_playing.current_begin_time:
+            return -1
+        return (datetime.now().timestamp()*1000 - self.now_playing.current_begin_time - self.global_offset)
+    
+    @property
+    def percent(self):
+        if not self.now_playing.is_playing:
+            return -1
+        if not self.now_playing.current_track_length:
+            return -1
+        return self.progress / self.now_playing.current_track_length
+    
+    @property
     def line(self):
         # print(self.now_playing.__dict__)
+        if not self.lyrics_mutex.tryLock(0):
+            return LyricLine(-3, "🔄")
         if not self.now_playing.has_lyrics:
+            self.lyrics_mutex.unlock()
+            return LyricLine(-2, "♬")
+        if not self.lyrics and self.now_playing.has_lyrics:
+            self.lyrics_mutex.unlock()
+            return LyricLine(-3, "🔄")
+        if not self.lyrics:
+            self.lyrics_mutex.unlock()
+            return LyricLine(-2, "♬")
+        if not self.now_playing.is_playing:
+            self.lyrics_mutex.unlock()
             return None
         if not self.now_playing.current_begin_time:
+            self.lyrics_mutex.unlock()
             return None
-        if not self.lyrics:
-            return None
-        if not self.now_playing.is_playing:
-            return None
-        l = self.lyrics.get_line_with_timestamp(datetime.now().timestamp()*1000 - self.now_playing.current_begin_time - self.global_offset)
+        l = self.lyrics.get_line_with_timestamp(self.progress)
         if l:
+            self.current_line = l
+            self.lyrics_mutex.unlock()
             return l
-        return None
+        self.lyrics_mutex.unlock()
+        return LyricLine(-2, "♬")
     
     def manager_callback(self, value):
-        if not self.callback_mutex.tryLock(timeout=0):
+        if not self.callback_mutex.tryLock(0):
             # print("UPDATING SKIPPED")
             return
         if value == PlayingStatusTrigger.NEW_TRACK:
@@ -92,7 +129,7 @@ class LyricsMaintainer():
             self.style = get_style(self.now_playing.current_track)
             if self.update_callback is not None:
                 self.update_callback(value)
-            self.manager.get_lyrics(self.now_playing.current_track, lambda x: self.set_lyrics(*x), lock=self.lyrics_mutex)
+            self.manager.get_lyrics(self.now_playing.current_track, lambda x: self.set_lyrics(*x))
             self.callback_mutex.unlock()
             return
         if self.update_callback is not None:
@@ -101,9 +138,7 @@ class LyricsMaintainer():
         return
         
     def next_source(self):
-        if not self.now_playing.has_lyrics:
-            self.lyrics = None
-            return
+        self.now_playing.has_lyrics = True
         if not self.now_playing.is_playing:
             return
         current_source = self.lyrics.source if self.lyrics else None
@@ -112,8 +147,13 @@ class LyricsMaintainer():
             next_source = list(self.providers.keys())
         else:
             current_idx = list(self.providers.keys()).index(current_source)
-            next_source = list(self.providers.keys())[(current_idx + 1) % len(self.providers):]
-        self.manager.get_lyrics(self.now_playing.current_track, lambda x: self.set_lyrics(*x, check_first=True), lock=self.lyrics_mutex, source=next_source)
+            next_source = list(self.providers.keys())
+            next_source = next_source[(current_idx + 1) % len(self.providers):] + next_source[:(current_idx + 1) % len(self.providers)]
+        return next_source
+    
+    def get_from_next_source(self):
+        next_source = self.next_source()
+        self.manager.get_lyrics(self.now_playing.current_track, lambda x: self.set_lyrics(*x, check_first=True), source=next_source)
         
     def set_empty_lyrics(self):
         self.lyrics = Lyrics([])
@@ -129,25 +169,33 @@ class LyricsMaintainer():
     
     @track_offset.setter
     def track_offset(self, value):
+        if not self.lyrics_mutex.tryLock(0):
+            return
         if not self.now_playing.has_lyrics:
+            self.lyrics_mutex.unlock()
             return
         self.lyrics.offset = value
         print("LYRIC OFFSET UPDATED: ", self.lyrics.offset)
         self.manager.save_lyrics(self.lyrics.track, self.lyrics)
+        self.lyrics_mutex.unlock()
 
     
     def set_lyrics(self, value, track=None, check_first=False):
-        if check_first and not self.lyrics:
+        if check_first and not value:
             return
         if track is not None:
             if self.now_playing.current_track != track:
                 return
+        self.lyrics_mutex.lock()
         self.lyrics = value
         if not self.lyrics:
             logging.info("LYRICS NOT FOUND")
             self.now_playing.has_lyrics = False
         else:
             self.now_playing.has_lyrics = True
+            if self.lyrics.source:
+                self.update_callback("Got Lyrics from " + self.lyrics.source)
+        self.lyrics_mutex.unlock()
         print("SET LYRICS: ", self.now_playing.current_track, self.lyrics is not None)
 
         

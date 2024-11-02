@@ -1,28 +1,31 @@
-![Layout](examples/pngs/layout.png)
+![Layout](readme_resources/gifs/beyonce_aliensuperstar.gif)
 
-# LyricBar: <small style="color:grey">Minimal ~~Desktop~~ Taskbar Lyrics For *(Mainly)* Spotify </small>
+# <img src="readme_resources/icon.ico" alt="Icon" width="40" height="40"> LyricBar: <small style="color:grey">Taskbar Lyrics For Spotify (and more)</small>
 
-- ***UNDER DEVELOPMENT (maybe)***
-- ***Only tested on my own pc. Can be buggy.***
-- **You can still tweak it to make it like a normal draggable lyrics widget though**
+----
+## ✏️ Notes
+
+- UNDER DEVELOPMENT (maybe)
+- Only tested on my own pc. Can be buggy.
 - <span style="color:red; font-weight:bold;">Also works for other music players! (Though I didn't try many...)</span>
-- **VERY PRETTY!**
+- VERY PRETTY!
 
+----
 
-| Overview |
-|:----------:|
-| **Song/Artist Level Theme Customization** |
-| ![song_change](examples/gifs/charlixcx_everythingisromantic.gif) |
-| **Easy Offset Setting & Auto Hide** |
-| ![ctrl](examples/gifs/lanadelrey_lovesong.gif) |
-| **Lyrics Line Filter & Reformat** |
-| ![fzl](examples/gifs/yeule_softscars.gif) |
-| **Sufjan Stevens** |
-| ![sfj](examples/gifs/sufjanstevens_chicago.gif) |
+## ⭐ Features
 
-## Usage
+- Dock at taskbar, hide automatically when mouse enter or no media is playing
+    ![](readme_resources/auto_hide.gif)
+- Easy lyrics source management and track / global syncing offset setting
+    ![](readme_resources/lyric_management.gif)
+- Track / Artist level theme customization
+    ![](readme_resources/theme_customization.gif)
 
-### Setup
+----
+
+## 😎 Usage
+
+### 🛠 Setup
 
 #### (Optional) Spicetify Setup
 - With Spicetify, we can directly get playback information from desktop app, which provides much more precise information.
@@ -31,29 +34,33 @@
 
 #### LyricBar Setup
 
-```
-pip install -r requirements.txt
-(proxy setting)
-python ./main.py
-```
+- Directly unzip from release.zip, or
+- Run with python
+    ```
+    pip install -r requirements.txt
+    (proxy setting)
+    python ./main.py
+    ```
 
-### Configuration
-- [Global Settings](LyricBar/globalvariables.py)
-- [Themes](LyricBar/stylesheets.py)
+### ⚙️ Configuration
+- [Global Settings](settings.yaml)
+- [Themes](themes/)
 
-### Control
+### 🎮 Control
 
 | Key | Function |
 |:---:|:--------:|
-| Ctrl + Mouse Hover | Keep the lyrics widget open |
+| **Ctrl + Mouse Hover** | Keep the lyrics widget open |
 | Mouse Left Button | Copy current line |
 | Mouse Right Button | Switch to next lyrics provider |
+| Mouse Middle Button | Reset track lyrics offset |
+| Shift + Mouse Middle Button | Clear lyrics |
 | Scroll Up/Down | Adjust track lyrics offset |
 | Shift + Scroll Up/Down | Adjust global lyrics offset |
 
-- It should be noted that the song progress from WRT may **be within 0-1 second error**, so you probably need to adjust global offset every run. If this bothers you then maybe you should use **Spicetify** as playing information provider, or switch to other spotify-API-based desktop lyrics.
+- It should be noted that the song progress from WRT may **be within 0-1 second error**, so you probably need to adjust global offset every run. If this bothers you then maybe you should use **Spicetify** as playing information provider, or switch to other spotify-API-based desktop lyrics apps.
 
-## Theme 
+### 🎨 Theme 
 
 - Currently Available Options:
     - Rule: Themes selection based on artist / track
@@ -61,10 +68,11 @@ python ./main.py
         - Font Family
         - Font Weight
         - Font Color
+        - Font Image (Texture)
         - Font Size
-    - Outline:
-        - Outline Color
-        - Outline Width
+        - Outline:
+            - Outline Color
+            - Outline Width
     - Shadow/Glow:
         - Shadow/Glow Color
         - Shadow/Glow Offset
@@ -75,27 +83,44 @@ python ./main.py
     - Entering Animation:
         - Fade in
         - Zoom in
+    - Progress Bar:
+        - Outline Color
+        - Filling Color
     - Line Formatter
 
-### Screenshots
+----
+
+## 🎨 Gallery
 
 | Default |
 |:-------:|
-| ![Default](examples/pngs/bigthief_littlethings.png) |
-
-| Example 1 | Example 2 |
-|:-----------:|:-----------:|
-| ![Example 1](examples/pngs/bjork_armyofme.png) | ![Example 2](examples/pngs/charlixcx_ithinkaboutitallthetime.png) |
-| **Example 3** | **Example 4** |
-| ![Example 3](examples/pngs/lanadelrey_venicebitch.png) | ![Example 4](examples/pngs/rosalia_motomami.png) |
-| **Example 5** | **Example 6** |
-| ![Example 5](examples/pngs/sophie_immaterial.png) | ![Example 6](examples/pngs/yeule_softscars.png) |
+| ![Default](readme_resources/gifs/janeremover_magiciwantu.gif) |
+| **Provided Presets** |
+| ![](readme_resources/gifs/adriannelenker_notalotjustforever.gif) |
+| ![](readme_resources/gifs/bjork_hyperballad.gif)|
+| ![](readme_resources/gifs/fkatwigs_eusexua.gif) |
+| ![](readme_resources/gifs/frankocean_godspeed.gif) |
+| ![](readme_resources/gifs/lanadelreymarinersaprtmentcomplex.gif) |
+| ![](readme_resources/gifs/newjeans_ditto.gif) |
+| ![](readme_resources/gifs/phoebebridgers_saviorcomplex.gif) |
+| ![](readme_resources/gifs/rosalia_monomami.gif) |
+| ![](readme_resources/gifs/soccermommy_yellowisthecolorofhereyes.gif) |
+| ![](readme_resources/gifs/sufjanstevens_casmirpulaskiday.gif) |
+| ![](readme_resources/gifs/troyesivan_howwtostaywithyou.gif) |
+| ![](readme_resources/gifs/tylerthecreator_sticky.gif) |
+| *and more...*|
 
 - *Font not provided*
 
+----
 
-## Updates
+## ♻️ Updates
 
+- 20241102
+    - Auto-rescale over-long lyrics
+    - Better configuration and theme management
+    - Response toasts
+    - Portable .exe
 - 20241026
     - Add support for Spicetify, mmmmmuch more precise playback information now!
     - Fix syncedlyrics
@@ -118,9 +143,12 @@ python ./main.py
     - Can stay on top of taskbar now
     - Spotify API is only called to get track id for more precised lyrics matching, playback information is handled with winsdk now
 
+----
 
-## Todo
+## 💼 Todo
 
+- [ ] Code clean up......
+- [ ] Peek lines without changing offset
 - [x] Hide when hovered
 - [x] Option for match lyrics without track id
 - [x] Lyric lines filtering
@@ -129,14 +157,14 @@ python ./main.py
 - [x] Display behavior is not very stable (?)
 - [x] Fix Musixmatch lyrics searching
 - [x] Get better syncing with Spicetify?
-- [ ] Long lyrics line scrollllllllllll
-- [ ] Better theme management
-- [ ] Peek lines without changing offset
-- [ ] Visual feedback to actions
-- [ ] Pack It Up! 
+- [x] Long lyrics line scrollllllllllll
+- [x] Better theme management
+- [x] Visual feedback to actions
+- [x] Pack It Up! 
 
+----
 
-## Made With
+## 💖 Made With
 - PyQt5
 - pyautogui
 - pillow
@@ -146,7 +174,9 @@ python ./main.py
 - [winsdk](https://github.com/pywinrt/python-winsdk)
 - [Spicetify](https://spicetify.app)
 
-## With Reference To
+----
+
+## 👓 With Reference To
 - [This stackoverflow post](https://stackoverflow.com/questions/64290561/qlabel-correct-positioning-for-text-outline)
 - [This stackoverflow post](https://stackoverflow.com/questions/79080076/how-to-set-a-qwidget-hidden-when-mouse-hovering-and-reappear-when-mouse-leaving)
 - [Py Now Playing](https://github.com/ABUCKY0/py-now-playing)
