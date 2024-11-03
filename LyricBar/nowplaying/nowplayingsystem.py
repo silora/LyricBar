@@ -78,19 +78,28 @@ class NowPlayingSystem(NowPlaying):
             return
         if info.is_playing and (self.playing_info is None or self.track_check(self.playing_info, info)):
             logging.info("NEW TRACK: ", info.current_track)
-            self.playing_info = info
+            if self.playing_info is not None:
+                self.playing_info.update(info)
+            else:
+                self.playing_info = info
             if self.update_callback is not None:
                 self.update_callback(PlayingStatusTrigger.NEW_TRACK)
             self.sync_mutex.unlock()
             return
         if info.is_playing and not self.playing_info.is_playing:
             logging.info("RESUMING")
-            self.playing_info = info
+            if self.playing_info is not None:
+                self.playing_info.update(info)
+            else:
+                self.playing_info = info
             if self.update_callback is not None:
                 self.update_callback(PlayingStatusTrigger.RESUME)
         if info.is_playing and self.playing_info and self.update_check(self.playing_info, info):
             logging.info("SYNCING")
-            self.playing_info = info
+            if self.playing_info is not None:
+                self.playing_info.update(info)
+            else:
+                self.playing_info = info
         self.sync_mutex.unlock()
 
     async def get_media_manager(self):
@@ -109,10 +118,12 @@ class NowPlayingSystem(NowPlaying):
             creationflags=subprocess.CREATE_NO_WINDOW,
         )
         amuids = json.loads(amuids.decode("gbk").replace("\r\n", "\n"))
+        
+        rets = []
         for app in amuids:
-            if self.tracking_app.lower() == app["AppID"].split("\\")[-1].lower():
-                return app["AppID"].split("\\")[-1]
-        return None
+            if self.tracking_app.lower() in app["AppID"].split("\\")[-1].lower():
+                rets.append(app["AppID"])
+        return None if len(rets) == 0 else min(rets, key=len)
 
     async def get_now_playing_info(self):
         if self.app_id is None:

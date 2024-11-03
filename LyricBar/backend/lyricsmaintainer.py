@@ -91,7 +91,8 @@ class LyricsMaintainer():
     
     @property
     def line(self):
-        # print(self.now_playing.__dict__)
+        # # print(self.now_playing.__dict__)
+        # print("has lyrics?", self.now_playing.has_lyrics)
         if not self.lyrics_mutex.tryLock(0):
             return LyricLine(-3, "🔄")
         if not self.now_playing.has_lyrics:
@@ -194,7 +195,7 @@ class LyricsMaintainer():
         else:
             self.now_playing.has_lyrics = True
             if self.lyrics.source:
-                self.update_callback("Got Lyrics from " + self.lyrics.source)
+                self.update_callback("Lyrics from " + self.lyrics.source)
         self.lyrics_mutex.unlock()
         print("SET LYRICS: ", self.now_playing.current_track, self.lyrics is not None)
 

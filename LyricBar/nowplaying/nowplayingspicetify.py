@@ -56,7 +56,10 @@ class NowPlayingSpicetify(NowPlaying):
         except:
             return
         if ((self.playing_info is not None and self.playing_info.current_track.id != new_playing_info.current_track.id) or self.playing_info is None) and new_playing_info.is_playing:
-            self.playing_info = new_playing_info
+            if self.playing_info is not None:
+                self.playing_info.update(new_playing_info)
+            else:
+                self.playing_info = new_playing_info
             self.update_callback(PlayingStatusTrigger.NEW_TRACK)
             return
         elif self.playing_info is not None and self.playing_info.is_playing != new_playing_info.is_playing:
@@ -68,7 +71,10 @@ class NowPlayingSpicetify(NowPlaying):
                 return
         elif self.playing_info is None or self.playing_info.is_playing == False:
             return
-        self.playing_info = new_playing_info
+        if self.playing_info is not None:
+            self.playing_info.update(new_playing_info)
+        else:
+            self.playing_info = new_playing_info
         return
                 
                 

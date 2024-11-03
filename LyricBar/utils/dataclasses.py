@@ -87,4 +87,12 @@ class PlayingInfo:
     @current_track_length.setter
     def current_track_length(self, value):
         self.current_track.length = value
+        
+    def update(self, new_info):
+        if self.current_track != new_info.current_track:
+            self.has_lyrics = True
+        self.current_track = new_info.current_track
+        self.current_begin_time = new_info.current_begin_time
+        self.is_playing = new_info.is_playing
+        self.last_updated_time = new_info.last_updated_time
 

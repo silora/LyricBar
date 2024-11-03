@@ -42,6 +42,13 @@
     python ./main.py
     ```
 
+#### (Optional) Get Target App id
+- If you are not using Spotify, you need to run [get_target_id.py](./get_target_id.py) or the corresponding .exe file in release zip to get the id of the app you would like to track. Then set the 'Tracking App' key in [Global Settings](settings.yaml).
+
+    ```
+    python ./get_target_id.py
+    ```
+
 ### ⚙️ Configuration
 - [Global Settings](settings.yaml)
 - [Themes](themes/)
@@ -116,6 +123,8 @@
 
 ## ♻️ Updates
 
+- 20241103
+    - Fixed overlong lyrics scale
 - 20241102
     - Auto-rescale over-long lyrics
     - Better configuration and theme management

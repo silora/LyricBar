@@ -189,7 +189,6 @@ class LyricsDisplay(QWidget):
             glow.setOffset(style["shadow-offset"][0], style["shadow-offset"][1])
             glow.setBlurRadius(style["shadow-radius"])
             self.label.setGraphicsEffect(glow)
-        
         if "progress-color" not in style:
             if "font-image" in style:
                 self.progress.progress_color = QPixmap(style["font-image"])

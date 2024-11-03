@@ -1,11 +1,11 @@
 STYLES = {
     "something to give each other": {
-        "background-color": "qradialgradient(spread:pad, cx:0.5, cy:1, radius:0.8, fx:0.5, fy:0.5, stop:0 #e0c000, stop:0.7 #e0edaa, stop:1 #00000000)",
+        "background-color": "qradialgradient(mode:logical, spread:reflect, cx:width/2, cy:height/2, radius:3, fx:width/2, fy:height/2, stop:0 #e0c00088, stop:0.4 #e0edaa88, stop:1 #00000000)",
         
         "font-family": "Helvetica",
         "font-weight": "black",
         "font-italic": True,
-        "font-color": "#dc010288",
+        "font-color": "#dc0102",
         
         "line-width": 1,
         "line-color": "#dc0102",
