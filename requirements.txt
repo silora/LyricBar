@@ -4,3 +4,6 @@ PyQt5
 pyautogui
 pillow
 websocket_server
+vosk
+pyaudio
+

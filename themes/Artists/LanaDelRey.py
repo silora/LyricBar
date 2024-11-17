@@ -28,6 +28,8 @@ STYLES = {
         "shadow-radius": 5,
         
         "entering": "zoomin_overscale",
+        "sustaining": "zooming",
+        "leaving": "topslideout",
         
         "rule": lambda track: (track.artist.lower() == "lana del rey" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["norman fucking rockwell", "mariners apartment complex", "venice bitch", "fuck it i love you", "doin' time", "love song", "cinnamon girl", "how to disappear", "california", "the next best american record", "the greatest", "bartender", "happiness is a butterfly", "hope is a dangerous thing for a woman like me to have - but i have it"]]))
     },
@@ -42,6 +44,7 @@ STYLES = {
     },
     "bb": {
         "font-family": "Modern No. 216 Heavy",
+        "font-size": "20px",
         
         "rule": lambda track: (track.artist.lower() == "lana del rey" and (any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["text book", "blue banisters", "arcadia", "interlude - the trio", "black bathing suit", "if you lie down with me", "violets for roses", "dealer", "thunder", "wildflower wildfire", "nectar of the gods", "living legend", "cherry blossom", "sweet carolina"]]) or track.title.lower().replace("‘", "'").replace("’", "'") in ["beautiful"]))
     },

@@ -20,6 +20,8 @@
     ![](readme_resources/lyric_management.gif)
 - Track / Artist level theme customization
     ![](readme_resources/theme_customization.gif)
+- STT Mode
+    ![](readme_resources/stt_mode.gif )
 
 ----
 
@@ -42,12 +44,18 @@
     python ./main.py
     ```
 
-#### (Optional) Get Target App id
+#### (Optional) Get Target App ID
 - If you are not using Spotify, you need to run [get_target_id.py](./get_target_id.py) or the corresponding .exe file in release zip to get the id of the app you would like to track. Then set the 'Tracking App' key in [Global Settings](settings.yaml).
 
     ```
     python ./get_target_id.py
     ```
+
+#### (Optional) Setup STT
+- If you want to use STT mode:
+    - You need to download model from [Vosk](https://alphacephei.com/vosk/models) then extract, and update the "Model Path" key in [Global Settings](settings.yaml).
+    - You need to setup system audio loopback. One solution is [VB-Cable](https://vb-audio.com/Cable/). Install then update the "Tracking Input" key in [Global Settings](settings.yaml) with the name of your input (check that in Control Panel). (the installation takes a while and the window may freeze just wait patiently!)
+
 
 ### ⚙️ Configuration
 - [Global Settings](settings.yaml)
@@ -60,6 +68,7 @@
 | **Ctrl + Mouse Hover** | Keep the lyrics widget open |
 | Mouse Left Button | Copy current line |
 | Mouse Right Button | Switch to next lyrics provider |
+| Shift + Mouse Right Button | Switch between STT mode and lyrics mode |
 | Mouse Middle Button | Reset track lyrics offset |
 | Shift + Mouse Middle Button | Clear lyrics |
 | Scroll Up/Down | Adjust track lyrics offset |
@@ -87,9 +96,10 @@
     - Background:
         - Background Color
         - Background Image
-    - Entering Animation:
-        - Fade in
-        - Zoom in
+    - Animation:
+        - Entering
+        - Sustaining
+        - Leaving
     - Progress Bar:
         - Outline Color
         - Filling Color
@@ -123,9 +133,13 @@
 
 ## ♻️ Updates
 
-- 20241103
+- 20241117 v0.2.0
+    - Add support for STT mode
     - Fixed overlong lyrics scale
-- 20241102
+    - More animation options
+- 20241103 v0.1.1
+    - Fixed overlong lyrics scale
+- 20241102 v0.1.0
     - Auto-rescale over-long lyrics
     - Better configuration and theme management
     - Response toasts
@@ -177,12 +191,13 @@
 - PyQt5
 - pyautogui
 - pillow
+- Vosk
+- PyAudio
 <!-- - [syrics](https://github.com/akashrchandran/Syrics)
 - [spotipy](https://github.com/spotipy-dev/spotipy) -->
 - [pylrc](https://github.com/doakey3/pylrc)
 - [winsdk](https://github.com/pywinrt/python-winsdk)
 - [Spicetify](https://spicetify.app)
-
 ----
 
 ## 👓 With Reference To

@@ -1,6 +1,6 @@
 import logging
 import sys
-from PyQt5.QtCore import QPropertyAnimation, Qt, QTimer, QCoreApplication, pyqtSignal, QMutex, QEvent
+from PyQt5.QtCore import QPropertyAnimation, Qt, QTimer, QCoreApplication, pyqtSignal, QMutex
 from PyQt5.QtGui import QColor, QCursor, QKeyEvent, QPixmap, QBrush, QPen, QGuiApplication, QIcon
 from PyQt5.QtWidgets import (
     QApplication,
@@ -11,8 +11,6 @@ from PyQt5.QtWidgets import (
     QMenu,
     QSystemTrayIcon
 )
-
-from .components.lyriclabel import LyricLabel
 
 from ..themes import STYLES, get_style
 
@@ -61,9 +59,26 @@ class LyricsDisplay(QWidget):
         
         self.faux_taskbar = FauxTaskbar(self.frame, geometry_reference=self)
         
-        self.label = LyricLabel(self.width(), self.height(), None, parent=self.frame)
+        self.pad = Pad(convert_to_color("rgba(0, 0, 0, 0)"), parent=self.frame)
         
-        self.setGeometry()        
+        self.imagepad = QLabel("", parent=self.frame)
+        self.imagepad.setStyleSheet("background-color: transparent")
+        
+        self.label = OutlinedLabel("- LyricBar -", parent=self.frame, linewidth=0, relative_outline=False, brushcolor=QColor(138, 206, 0, 255), linecolor=QColor(255, 255, 255, 100))
+        
+        self.progress = ProgressBar(parent=self.frame)
+        
+        # self.left_timer = QLabel("00:00", parent=self.frame)
+        # self.right_timer = QLabel("00:00", parent=self.frame)
+        # self.progress.setGeometry((self.width() - 400) // 2, -10, 400, 16)
+        glow = QGraphicsDropShadowEffect()
+        glow.setColor(QColor(0, 0, 0, 200))
+        glow.setBlurRadius(15)
+        glow.setOffset(0, 0)
+        self.progress.setGraphicsEffect(glow)
+        
+        self.setGeometry()
+        
         # self.windowHandle().screenChanged.connect(self.setGeometry)
 
         self.show()
@@ -71,7 +86,6 @@ class LyricsDisplay(QWidget):
         self.setMouseTracking(True)
         
         self.displaying_line = None
-        self.displaying_begin_time = None
         self.bar_hidden = False
         self.paused = False
         
@@ -87,7 +101,7 @@ class LyricsDisplay(QWidget):
         self.entering = None  
         self.sustain = None
         self.toaster = ToastTag(parent=self.frame)
-        self.toaster.setGeometry(self.width() // 3, 0, (self.height() + 10) * 2, (self.height() + 10))
+        self.toaster.setGeometry(self.width() // 3, 0, (self.height() + 5) * 2, (self.height() + 5))
         self.toast_signal.connect(self.toaster.start)
         
         self.callback_signal.connect(self.maintainer_callback)
@@ -138,14 +152,12 @@ class LyricsDisplay(QWidget):
             self.line_mode = 1
             self.toast("Switching to STT Mode")
             self.label.right_pad = True
-            self.label.use_scale = False
             self.lyric_maintainer.pause()
             self.sst_maintainer.start()
         else:
             self.line_mode = 0
             self.toast("Switching to Lyrics Mode")
             self.label.right_pad = False
-            self.label.use_scale = True
             self.lyric_maintainer.start()
             self.sst_maintainer.pause()
     
@@ -161,7 +173,20 @@ class LyricsDisplay(QWidget):
         self.faux_taskbar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.faux_taskbar.setGeometry(0, 0, self.width(), self.height())
         
+        self.pad.setGeometry(0, 0, self.width(), self.height())
+        self.pad.setStyleSheet("background-color: transparent")
+        
+        self.imagepad.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.imagepad.setGeometry(0, 0, self.width(), self.height())
+        
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignLeft)
+        self.label.setGeometry(0, 0, self.width(), self.height())
+        
+        self.progress.setGeometry((self.width() - 400) // 2, self.height() - 10, 400, 8)
+        
+        # self.left_timer.setGeometry((self.width() - 400) // 2 - 60, 0, 60, 16)
+        # self.right_timer.setGeometry((self.width() + 400) // 2, 0, 60, 16)
         
     def copyLyricsToClipboard(self):
         clipboard = QApplication.clipboard()
@@ -171,7 +196,7 @@ class LyricsDisplay(QWidget):
     def windowConfig(self):
         
         self.setAcceptDrops(False)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.X11BypassWindowManagerHint | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) # | Qt.WindowTransparentForInput)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) # | Qt.WindowTransparentForInput)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.setFixedSize(self.screen_width - 2 * LEFTOUT_WIDTH, TAKSBAR_HEIGHT - 1)
@@ -187,7 +212,84 @@ class LyricsDisplay(QWidget):
         if style["name"] == self.style_name:
             self.style_mutex.unlock()
             return
-        self.label.setStyle(**style)
+        if "font-image" in style:
+            self.label.setBrush(QPixmap(style["font-image"]))
+        else:
+            self.label.setBrush(QBrush(convert_to_color(style["font-color"])))
+        self.label.setPen(QPen(convert_to_color(style["line-color"])))
+        self.label.setOutlineThickness(style["line-width"])
+        self.label.font_size = int(style['font-size'].replace("px", ""))
+        self.label.font_family = style['font-family']
+        if style['font-weight'] == "light":
+            self.label.font_weight = 25
+        elif style['font-weight'] == "normal":
+            self.label.font_weight = 50
+        elif style['font-weight'] == "demibold":
+            self.label.font_weight = 63
+        elif style['font-weight'] == "bold":
+            self.label.font_weight = 75
+        elif style['font-weight'] == "black":
+            self.label.font_weight = 87
+        self.label.font_italic = style['font-italic']
+        self.label.flip = style["flip-text"]
+        self.label.opacity = 1
+        self.label.scale = 1
+        self.label.setGraphicsEffect(None)
+        if style["use-shadow"]:
+            glow = QGraphicsDropShadowEffect()
+            glow.setColor(QColor(*style["shadow-color"]) if isinstance(style["shadow-color"], tuple) else QColor(style["shadow-color"]))
+            glow.setOffset(style["shadow-offset"][0], style["shadow-offset"][1])
+            glow.setBlurRadius(style["shadow-radius"])
+            self.label.setGraphicsEffect(glow)
+        if "progress-color" not in style:
+            if "font-image" in style:
+                self.progress.progress_color = QPixmap(style["font-image"])
+            else:
+                self.progress.progress_color = convert_to_color(style["font-color"])
+            # if isinstance(self.progress.progress_color, QColor):
+            #     self.progress.progress_color.setAlpha(255)
+        else:
+            self.progress.progress_color = convert_to_color(style["progress-color"])
+        if "progress-line-color" not in style and style["line-width"] != 0:
+            self.progress.line_color = convert_to_color(style["line-color"])
+        else:
+            self.progress.line_color = QColor(0, 0, 0, 0)
+        
+        self.pad.setColor(convert_to_color(style["background-color"], width=self.width(), height=self.height()))
+        
+        if "background-image"  in style:
+            image = QPixmap(style["background-image"])
+            image = image.scaled(1, self.pad.height(), Qt.KeepAspectRatioByExpanding)
+            self.imagepad.setPixmap(image)
+        else:
+            self.imagepad.setPixmap(QPixmap())
+        if style["entering"] == "fadein":
+            self.entering = QPropertyAnimation(self.label, b"opacity")
+            self.entering.setDuration(200)
+            self.entering.setStartValue(0.01)
+            self.entering.setEndValue(1.0)
+        elif style["entering"] == "zoomin":
+            self.entering = QPropertyAnimation(self.label, b"scale")
+            self.entering.setDuration(200)
+            self.entering.setStartValue(0.1)
+            self.entering.setEndValue(1)
+        elif style["entering"] == "zoomin_overscale":
+            self.entering = QPropertyAnimation(self.label, b"scale")
+            self.entering.setDuration(200)
+            self.entering.setStartValue(0.1)
+            self.entering.setKeyValueAt(0.6, 1.5)
+            self.entering.setEndValue(1)
+        else:
+            self.entering = None
+        # if self.entering is not None:
+        #     self.entering.finished.connect(self.sustaining_animation)
+        # self.sustain = QPropertyAnimation(self.label, b"geometry")
+        # self.sustain.setDuration(1000)
+        # self.sustain.setLoopCount(1)
+        # base = QRect(self.geometry())
+        # self.sustain.setStartValue(base)
+        # self.sustain.setKeyValues([(0.1, base.adjust(-1, 2, 0, 0)), (0.4, base.adjust(2, 4, 0, 0)), (0.9, base.adjust(3, 6, 0, 0)), (1, base.adjust(-2, -3, 0, 0))])
+        # self.sustain.setEndValue(base)
         self.style_name = style["name"]
         self.formatter = style["format"]
         self.style_mutex.unlock()
@@ -233,43 +335,41 @@ class LyricsDisplay(QWidget):
     def updateLyrics(self, anim=True):
         try:
             self.raise_()
-            # pass
         except:
             pass
         line = self.line_provider.line
-        begin_time = None if (line is None or line.begin_time <= 0) else line.begin_time
+        # if self.lyric_maintainer.style and self.lyric_maintainer.style != self.style_name:
+        #     self.updateStyle()
+        # print("UPDATING LYRICS", line)
         if line:
-            if (line == self.displaying_line and line.text == self.displaying_line.text) and begin_time == self.displaying_begin_time:
-                return
             text = line.text
-            anim = True
             formatted = self.formatter(text)
             if line.timestamp == -2:
                 formatted = "♬"
+                anim = False
             elif line.timestamp == -3:
                 formatted = "🔄"
                 anim = False
             elif line.timestamp == -4:
                 formatted = "👂"
-            elif line.timestamp == 0:
-                if self.line_mode == 0:
-                    formatted = "♬"
-                else:
-                    formatted = "👂" if line.text == "" else line.text
-            self.label.setText(formatted, anim and self.line_mode == 0, duration=line.end_timestamp-line.timestamp if (line.end_timestamp is not None and line.end_timestamp != -1) else None, start_time=begin_time)
+                anim = False
+            if formatted != self.label.text():
+                self.label.setText(formatted)
+            if line != self.displaying_line and text != "" and anim:
+                self.entering_animation()
             self.displaying_line = line
-            self.displaying_begin_time = begin_time
             return
         self.displaying_line = None
-        if self.label.text() != "⏸":
-            self.label.setText("⏸", False)
+        self.label.setText("⏸")
         return
         
     def updateProgress(self):
         if self.bar_hidden:
             return
-        self.label.setProgress(self.now_playing.percent)
-
+        self.progress.progress = self.now_playing.percent
+        # self.left_timer.setText(ms_to_mm_ss(self.lyric_maintainer.progress))
+        # self.right_timer.setText(ms_to_mm_ss(self.lyric_maintainer.now_playing.current_track_length))
+        self.progress.update()
         
     def updateTaskbar(self):
         if self.bar_hidden:
@@ -287,10 +387,16 @@ class LyricsDisplay(QWidget):
         if hidden:
             print("HIDING")
             self.faux_taskbar.setHidden(True)
+            self.pad.setHidden(True)
+            self.imagepad.setHidden(True)
+            self.progress.setHidden(True)
             self.label.setHidden(True)
         else:
             print("UNHIDING")
             self.label.setHidden(False)
+            self.progress.setHidden(False)
+            self.pad.setHidden(False)
+            self.imagepad.setHidden(False)
             self.faux_taskbar.setHidden(False)
         
 
@@ -319,11 +425,8 @@ class LyricsDisplay(QWidget):
             self.copyLyricsToClipboard()
             self.toast("Lyrics Copied to Clipboard")
         elif e.button() == Qt.MouseButton.RightButton:
-            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier == Qt.KeyboardModifier.ShiftModifier:
-                self.switch_mode()
-            else:
-                self.line_provider.get_from_next_source()
-                self.toast("Searching from Next Source")
+            self.line_provider.get_from_next_source()
+            self.toast("Searching from Next Source")
         elif e.button() == Qt.MouseButton.MiddleButton:
             if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier == Qt.KeyboardModifier.ShiftModifier:
                 self.line_provider.set_empty_lyrics()        
@@ -332,9 +435,9 @@ class LyricsDisplay(QWidget):
                 self.line_provider.track_offset = 0
                 self.toast("Track Offset Reset")
     
-    # def keyPressEvent(self, e):
-    #     if e.key() == Qt.Key.Key_Space:
-    #         self.switch_mode()
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key.Key_Space:
+            self.switch_mode()
     
     def setCenter(self, widget):
         widget.move((self.width() - widget.width()) // 2, (self.height() - widget.height()) // 2)
@@ -348,10 +451,9 @@ class LyricsDisplay(QWidget):
             self.line_provider.track_offset += e.angleDelta().y()
             self.toast("Track Offset:\n" + str(self.line_provider.track_offset))
             
-    def eventFilter(self, object, e):
-        if e.type() == QEvent.Type.MouseMove:
-            if self.geometry().contains(QCursor.pos()):
-                self.enterEvent(e)
+    def dragEnterEvent(self, e):
+        print("DRAG ENTER")
+        self.enterEvent(e)
 
 class SystemTrayIcon(QSystemTrayIcon):
 

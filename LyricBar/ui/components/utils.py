@@ -51,6 +51,7 @@ def convert_to_color(color, **kwargs):
             g.setCenter(cx, cy)
             g.setFocalPoint(fx, fy)
             g.setRadius(radius)
+            # g.setCenterRadius(radius)
             
             focalradius = re.search(r"focalradius:([^,]+)", color)
             if focalradius is not None:
@@ -95,7 +96,10 @@ def convert_to_color(color, **kwargs):
         
         stops = re.findall(r"stop:([\d\.]+) ([\w#]+|rgb\(\d+, \d+, \d+\)|rgba\(\d+, \d+, \d+, \d+\))(?=[,)])", color)
         for stop in stops:
-            g.setColorAt(float(stop[0]), convert_to_color(stop[1]))
+            pos = float(stop[0])
+            if pos < 0.0001:
+                pos = 0
+            g.setColorAt(min(pos, 1), convert_to_color(stop[1]))
         return g
     if isinstance(color, str):
         return QColor(color)        

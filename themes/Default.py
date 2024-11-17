@@ -47,5 +47,7 @@ STYLES = {
         "flip-text": False,
 
         "entering": "fadein",
+        "sustaining": "flickering",
+        "leaving": "fadeout"
     }
 }

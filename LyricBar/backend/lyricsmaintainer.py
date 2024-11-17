@@ -21,12 +21,11 @@ from ..themes import STYLES, get_style
 
 
 class LyricsMaintainer():
-    def __init__(self, update_callback=None):
+    def __init__(self, now_playing, update_callback=None):
         super().__init__()
         
         self.update_callback = update_callback
-        
-        self.now_playing = None
+
         # if PLAYING_INFO_PROVIDER == "Spotify":
         #     self.now_playing = NowPlayingSpotify(update_callback=self.update_lyrics)
         # elif PLAYING_INFO_PROVIDER == "System":
@@ -44,50 +43,31 @@ class LyricsMaintainer():
         self.manager = LyricsManager(providers=self.providers)
         
         
-        self._global_offset = GLOBAL_OFFSET
         
         self.lyrics = None
-        self.style = STYLES["default"]
-        self.style["name"] = "default"
+        # self.style = STYLES["default"]
+        # self.style["name"] = "default"
         
         self.callback_mutex = QMutex()
         self.lyrics_mutex = QMutex()
         
-        
-        if PLAYING_INFO_PROVIDER == "Spicetify":
-            self.now_playing = NowPlayingSpicetify(socket_port=SPICETIFY_PORT, update_callback=self.manager_callback, offset=120)
-        else:
-            self.now_playing = NowPlayingSystem(update_callback=self.manager_callback, sync_interval=25, offset=0)
+        self.now_playing = now_playing
+        self.now_playing.register_callback(self.manager_callback)
             
         self.current_line = None
         
-    def start(self):
-        self.now_playing.start_loop()
+        self.stopped = False
         
-    @property
-    def global_offset(self):
-        return self._global_offset
+    # def start(self):
+    #     self.now_playing.start_loop()
     
-    @global_offset.setter
-    def global_offset(self, value):
-        print("GLOBAL OFFSET UPDATED: ", value)
-        self._global_offset = value
+    def start(self):
+        self.stopped = False
+        self.now_playing.activate(self.manager_callback)
     
-    @property
-    def progress(self):
-        if not self.now_playing.is_playing:
-            return -1
-        if not self.now_playing.current_begin_time:
-            return -1
-        return (datetime.now().timestamp()*1000 - self.now_playing.current_begin_time - self.global_offset)
-    
-    @property
-    def percent(self):
-        if not self.now_playing.is_playing:
-            return -1
-        if not self.now_playing.current_track_length:
-            return -1
-        return self.progress / self.now_playing.current_track_length
+    def pause(self):
+        self.stopped = True
+        self.lyrics = None
     
     @property
     def line(self):
@@ -110,15 +90,20 @@ class LyricsMaintainer():
         if not self.now_playing.current_begin_time:
             self.lyrics_mutex.unlock()
             return None
-        l = self.lyrics.get_line_with_timestamp(self.progress)
+        l = self.lyrics.get_line_with_timestamp(self.now_playing.progress)
         if l:
             self.current_line = l
+            l.end_timestamp = self.lyrics.lines[l.index + 1].timestamp if l.index < len(self.lyrics.lines) - 1 else -1
+            l = self.lyrics.get_real_time(l)
+            l.begin_time = self.now_playing.current_begin_time + l.timestamp
             self.lyrics_mutex.unlock()
             return l
         self.lyrics_mutex.unlock()
         return LyricLine(-2, "♬")
     
     def manager_callback(self, value):
+        if self.stopped:
+            return
         if not self.callback_mutex.tryLock(0):
             # print("UPDATING SKIPPED")
             return
@@ -127,14 +112,13 @@ class LyricsMaintainer():
             if self.now_playing.current_track.artist == "" or self.now_playing.current_track.title == "":
                 self.callback_mutex.unlock()
                 return
-            self.style = get_style(self.now_playing.current_track)
-            if self.update_callback is not None:
-                self.update_callback(value)
+            # if self.update_callback is not None:
+            #     self.update_callback(value)
             self.manager.get_lyrics(self.now_playing.current_track, lambda x: self.set_lyrics(*x))
             self.callback_mutex.unlock()
             return
-        if self.update_callback is not None:
-            self.update_callback(value)
+        # if self.update_callback is not None:
+        #     self.update_callback(value)
         self.callback_mutex.unlock()
         return
         

@@ -46,10 +46,10 @@ class ToastTag(QLabel):
         self.bubble = ToastBubble(parent=self)
         self.bubble.setGeometry(0, 0, self.width(), self.height())
         
-        self.text = OutlinedLabel("omghiiii", parent=self, brushcolor=text_color, relative_outline=False, linewidth=0)
+        self.text = OutlinedLabel("", parent=self, brushcolor=text_color, relative_outline=False, linewidth=0)
         self.text.setGeometry(0, 0, self.width(), self.height())
         self.text.setFontFamily("Spotify Mix, Arial, Microsoft YaHei UI")
-        self.text.setFontSize(15)
+        self.text.setFontSize(18)
         self.text.setFontWeight("bold")
         self.text.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         

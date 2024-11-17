@@ -20,7 +20,7 @@ STYLES = {
         "font-family": "Xaltid",
         "font-color": "#8b893f",
         "font-weight": "bold",
-        "font-size": "50px",
+        "font-size": "40px",
         
         "line-width": 0,
         

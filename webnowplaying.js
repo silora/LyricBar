@@ -39,6 +39,7 @@ class WNPReduxWebSocket {
 		// rating: 0,
 		// repeat: "NONE",
 		// shuffle: false,
+		type: "",
 		uid: "",
 		begintime: 0
 	};
@@ -74,6 +75,7 @@ class WNPReduxWebSocket {
 		this.spicetifyInfo.artist = meta.artist_name;
 		this.spicetifyInfo.uid = data.item.uri.split(":").pop(-1);
 		this.spicetifyInfo.begintime = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
+		this.spicetifyInfo.type = data.item.type;
 		// let artistCount = 1;
 		// while (meta[`artist_name:${artistCount}`]) {
 		// 	this.spicetifyInfo.artist += `, ${meta[`artist_name:${artistCount}`]}`;

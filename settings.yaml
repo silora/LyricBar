@@ -1,11 +1,11 @@
 Proxy:
-  Host: ""
-  Port: 0
+  Host: "http://localhost"
+  Port: 7890
 
 Apperance:
   Taskbar Height: 70
   # Adjust this so the system tray icons are not covered
-  Leftout Width: 500
+  Leftout Width: 600
 
 Lyrics:
   Folder: lyrics
@@ -24,13 +24,21 @@ Lyrics:
   # If use Spotify lyrics, you need to set SP_DC
   SP_DC: ""
 
+STT:
+  # Remember to escape "\" with another "\" in the path
+  Model Path: ""
+  # You can check available INPUT devices in Control Panel
+  Tracking Input: ""
+
 Playing Info:
   # Available Playing Info Options: Spicetify, System
   # System: Use Windows Runtime API to get the current playing track. You can call them as frequently as you want, but the actual song progress information is updated every four second (at least on my pc, you are welcomed to test it on yours. I dont know whether its a winsdk thing). Song changes are instant, pausing can sometimes be delayed for whatever reason. Support many audio players. DOES NOT PROVIDE TRACK ID.
   # Spicetify: (Recommended) Uses Spicetify websocket to get the current playing track. It's much more responsive than Spotify API, but it's only available for Spotify desktop client with Spicetify installed. DOES PROVIDE TRACK ID.
-  Provider: System
+  Provider: Spicetify
+  # Provider: System
   # If use System, you need to set the tracking application
   Tracking App: Spotify.exe
+  # Tracking App: TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc
   # If use Spicetify, you need to set the Spicetify websocket port
   Spicetify Port: 8974
 

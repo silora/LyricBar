@@ -35,6 +35,10 @@ THIRD_PARTY_LYRICS_PROVIDERS = ["Lrclib", "NetEase", "Musixmatch", "Deezer", "Me
 
 ### DOES NOT conflict with each other, but spotify lyrics are prioritized, then third party lyrics providers in the list order
 
+##### STT PROVIDER
+STT_MODEL_PATH = ""
+STT_TRACKING_INPUT = ""
+
 
 ##### PLAYIING INFO PROVIDER
 
@@ -86,6 +90,12 @@ if "Lyrics" in config:
             if "SP_DC" in config["Lyrics"]["Providers"]["Spotify"]:
                 SP_DC = config["Lyrics"]["Providers"]["Spotify"]["DC"]
         THIRD_PARTY_LYRICS_PROVIDERS = filter(lambda x: x.lower() in ["musixmatch", "lrclib", "deezer", "netease", "megalobiz"], config["Lyrics"]["Providers"])
+
+if "STT" in config:
+    if "Model Path" in config["STT"]:
+        STT_MODEL_PATH = config["STT"]["Model Path"]
+    if "Tracking Input" in config["STT"]:
+        STT_TRACKING_INPUT = config["STT"]["Tracking Input"]
 
 if "Playing Info" in config:
     if "Provider" in config["Playing Info"]:

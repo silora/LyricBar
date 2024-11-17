@@ -17,12 +17,15 @@ class TrackInfo:
     id: str = None
     title: str = None
     length: int = None
+    is_music: bool = True
     _hash: str = None
 
     def __str__(self):
         return f"{self.artist} - {self.title} [{self.id}] ({self.length})"
 
     def __eq__(self, value: "TrackInfo") -> bool:
+        if value is None:
+            return False
         if self.id is not None and value.id is not None:
             return self.id == value.id
         if (

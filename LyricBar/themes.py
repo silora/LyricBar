@@ -62,7 +62,9 @@ STYLES = {
         
         "format": default_formatter,
         
-        "entering": "fadein"
+        "entering": "fadein",
+        "sustaining": "flickering",
+        "leaving": "fadeout"
     }
 }
 
@@ -106,7 +108,9 @@ def get_style(track: TrackInfo):
             print(f"Matching theme {name}")
             stl.update(style)
             if "format" in style:
-                stl["format"] = lambda line: (style["format"](STYLES["default"]["format"](line))) 
+                stl["format"] = lambda line: (style["format"](STYLES["default"]["format"](line)))
+            if "font-family" in style:
+                stl["font-family"] = ", ".join(list(filter(lambda x: x != " ", [_.strip() for _ in style["font-family"].split(",") + STYLES["default"]["font-family"].split(",")])))
             break
     print(DEFAULT_THEME)
     if stl_name == "default" and (DEFAULT_THEME is not None and DEFAULT_THEME in STYLES):

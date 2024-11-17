@@ -16,10 +16,16 @@ from ..utils.syncedlyricspatch import *
 class LyricLine:
     timestamp: int
     text: str
+    end_timestamp: int = -1
+    index: int = -1
+    begin_time: float = -1
 
-    def __init__(self, timestamp, text):
+    def __init__(self, timestamp, text, end_timestamp=None, index=None, begin_time=-1):
         self.timestamp = timestamp
         self.text = self.clean_text(text)
+        self.end_timestamp = end_timestamp
+        self.index = index
+        self.begin_time = begin_time
         
     def __lt__(self, other: "LyricLine"):
         return self.timestamp < other.timestamp
@@ -47,7 +53,11 @@ class LyricLine:
     def clean_text(self, text):
         text = text.strip()
         text = text.replace(u"е", "e")
+        text = text.replace(u"a", "a")
         return text
+    
+    def copy(self):
+        return LyricLine(self.timestamp, self.text, self.end_timestamp, self.index)
         
 @dataclass
 class Lyrics:
@@ -70,14 +80,21 @@ class Lyrics:
                 return lastline
         return lastline
     
+    def get_real_time(self, line):
+        line = line.copy()
+        line.timestamp += self.offset
+        if line.end_timestamp != -1:
+            line.end_timestamp += self.offset
+        return line
+    
     @classmethod
     def from_json(cls, jsn, track: TrackInfo = None):
         lyrics = cls()
         items = []
         
-        for line in jsn["lyrics"]["lines"]:
+        for idx, line in enumerate(jsn["lyrics"]["lines"]):
             start_time = int(line["startTimeMs"])
-            items.append(LyricLine(start_time, line["words"]))
+            items.append(LyricLine(start_time, line["words"], index=idx))
         lyrics.lines = sorted(items)
         if "offset" in jsn:
             lyrics.offset = jsn["offset"]
@@ -117,6 +134,8 @@ class Lyrics:
                         text = split + text
 
         lyrics.lines = sorted(items)
+        for idx, l in enumerate(lyrics.lines):
+            l.index = idx
         lyrics.track = track
         return lyrics
     

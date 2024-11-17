@@ -11,7 +11,7 @@ STYLES = {
         
         "use-shadow": False,
         
-        "rule": lambda track: (track.artist.lower() == "fka twigs" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["eusexua", "perfect stranger"]])),
+        "rule": lambda track: (track.artist.lower() == "fka twigs" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["eusexua", "perfect stranger", "drums of death"]])),
         
         "format": lambda line: line.upper().replace("‘", "").replace("’", "").replace("'", "")
     }

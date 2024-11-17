@@ -1,7 +1,10 @@
+from datetime import datetime
 from PyQt5.QtCore import QMutex, QObject, QTimer
 import os
 
-from ..globalvariables import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI
+from ..utils.dataclasses import PlayingStatusTrigger
+
+from ..globalvariables import GLOBAL_OFFSET, SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI
 
 
 
@@ -20,19 +23,79 @@ os.environ["SPOTIPY_REDIRECT_URI"] = SPOTIPY_REDIRECT_URI
 class NowPlaying(QObject):
     def __init__(self, sync_interval=60000, update_callback=None):
         super().__init__()
-        self.update_callback = update_callback
+        self.registered_callbacks = set()
+        if update_callback is not None:
+            self.registered_callbacks.add(update_callback)
         self.playing_info = None
         self.sync_mutex = QMutex()
         self.sync_timer = QTimer(self)
         self.sync_timer.timeout.connect(self.sync)
         self.sync_interval = sync_interval
+        self.started = False
+        
+        self._global_offset = GLOBAL_OFFSET
 
     def start_loop(self):
+        self.started = True
         if self.sync_interval > 0:
             self.sync_timer.start(self.sync_interval)
 
     def sync(self):
         pass
+    
+    def register_callback(self, callback):
+        self.registered_callbacks.add(callback)
+        if not self.started:
+            return
+        if self.playing_info is not None and self.playing_info.is_playing:
+            callback(PlayingStatusTrigger.NEW_TRACK)
+        else:
+            callback(PlayingStatusTrigger.PAUSE)
+            
+    def activate(self, callback=None):
+        if callback is not None:
+            if self.playing_info is not None and self.playing_info.is_playing:
+                callback(PlayingStatusTrigger.NEW_TRACK)
+            else:
+                callback(PlayingStatusTrigger.PAUSE)
+            return
+        for callback in self.registered_callbacks:
+            if self.playing_info is not None and self.playing_info.is_playing:
+                callback(PlayingStatusTrigger.NEW_TRACK)
+            else:
+                callback(PlayingStatusTrigger.PAUSE)
+    
+    def unregister_callback(self, callback):
+        self.registered_callbacks.remove(callback)
+        
+    def update_callback(self, trigger):
+        for callback in self.registered_callbacks:
+            callback(trigger)
+            
+    @property
+    def global_offset(self):
+        return self._global_offset
+    
+    @global_offset.setter
+    def global_offset(self, value):
+        print("GLOBAL OFFSET UPDATED: ", value)
+        self._global_offset = value
+            
+    @property
+    def progress(self):
+        if not self.is_playing:
+            return -1
+        if not self.current_begin_time:
+            return -1
+        return (datetime.now().timestamp()*1000 - self.current_begin_time)
+    
+    @property
+    def percent(self):
+        if not self.is_playing:
+            return -1
+        if not self.current_track_length:
+            return -1
+        return self.progress / self.current_track_length
 
     @property
     def is_playing(self):
@@ -77,7 +140,7 @@ class NowPlaying(QObject):
     @property
     def current_begin_time(self):
         return (
-            self.playing_info.current_begin_time
+            self.playing_info.current_begin_time + self.global_offset
             if self.playing_info is not None
             else None
         )

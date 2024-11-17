@@ -8,7 +8,11 @@ import numpy as np
 
 def gen_qmap(geom):
     sample_geom = geom.adjusted(-1, 0, 1, 0)
-    img = ImageGrab.grab((sample_geom.left(), sample_geom.top(), sample_geom.right()+1, sample_geom.bottom()+1))
+    img = None
+    try:
+        img = ImageGrab.grab((sample_geom.left(), sample_geom.top(), sample_geom.right()+1, sample_geom.bottom()+1))
+    except Exception as e:
+        return None
     # screenshot = pyautogui.screenshot(region=(sample_geom.left(), sample_geom.top(), sample_geom.width(), sample_geom.height()))
     # img = Image.frombytes('RGB', screenshot.size, screenshot.tobytes())
     left_colors = np.zeros((geom.height(), 3), dtype=np.float32)
@@ -39,8 +43,10 @@ class FauxTaskbar(QLabel):
         
     
     def update_faux_taskbar(self):
-        self.blending = gen_qmap(self.geometry_reference.geometry())
-        self.update()
+        new_gen = gen_qmap(self.geometry_reference.geometry())
+        if new_gen is not None:
+            self.blending = new_gen
+            self.update()
         
     def update_taskbar(self):
         self.update_signal.emit()

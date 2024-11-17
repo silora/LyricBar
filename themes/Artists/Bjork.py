@@ -18,7 +18,7 @@ STYLES = {
     "vespertine": {
         "font-color": "#ffffff",
         "font-family": "vespertine",
-        "font-size": "40px",
+        "font-size": "50px",
         
         "line-width": 0,
         

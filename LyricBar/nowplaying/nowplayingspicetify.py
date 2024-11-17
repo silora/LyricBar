@@ -23,6 +23,7 @@ class NowPlayingSpicetify(NowPlaying):
         
         
     def start_loop(self):
+        self.started = True
         self.update_callback(PlayingStatusTrigger.PAUSE)
         self.thread = threading.Thread(target=self.server.run_forever, daemon=True).start()
         self.sync_timer.start(self.sync_interval)
@@ -48,7 +49,8 @@ class NowPlayingSpicetify(NowPlaying):
                     artist=info["ARTIST"],
                     title=info["TITLE"],
                     length=int(info["DURATION"]),
-                    id=info["UID"]
+                    id=info["UID"],
+                    is_music=info["TYPE"] == "track",
                 ),
                 current_begin_time=info["BEGINTIME"] + self.offset,
                 is_playing=info["STATE"] == 1,
