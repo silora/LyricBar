@@ -1,8 +1,10 @@
 STYLES = {
     "cupcakke": {
         "font-color": "#e0ddb4",
-        "font-family": "Feathergraphy clean",
-        "font-size": "20px",
+        # "font-family": "Feathergraphy clean",
+        "font-family": "fonts/FeathergraphyClean.ttf",
+        
+        "font-size": "40px",
         
         "line-width": 0,
         

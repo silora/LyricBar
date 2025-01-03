@@ -34,13 +34,17 @@ Playing Info:
   # Available Playing Info Options: Spicetify, System
   # System: Use Windows Runtime API to get the current playing track. You can call them as frequently as you want, but the actual song progress information is updated every four second (at least on my pc, you are welcomed to test it on yours. I dont know whether its a winsdk thing). Song changes are instant, pausing can sometimes be delayed for whatever reason. Support many audio players. DOES NOT PROVIDE TRACK ID.
   # Spicetify: (Recommended) Uses Spicetify websocket to get the current playing track. It's much more responsive than Spotify API, but it's only available for Spotify desktop client with Spicetify installed. DOES PROVIDE TRACK ID.
+  
   Provider: Spicetify
-  # Provider: System
-  # If use System, you need to set the tracking application
-  Tracking App: Spotify.exe
-  # Tracking App: TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc
-  # If use Spicetify, you need to set the Spicetify websocket port
+  # If use Spicetify, you need to set the Spicetify websocket port. Default port is 8974 with provided script.
   Spicetify Port: 8974
+
+  # Provider: System
+  # If use System, you need to set the tracking application. Here are some examples:
+  #     Tracking App: Spotify.exe   # For Spotify
+  #     Tracking App: AppleInc.AppleMusicWin_nzyj5cx40ttqa!App   # For Apple Music
+  #     Tracking App: F0DC299D809B9700   # For Zen Browser
+  #     Tracking App: TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc  # For Arc Browser
 
 Themes:
   Folder: themes

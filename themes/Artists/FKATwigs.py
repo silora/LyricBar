@@ -2,7 +2,8 @@ STYLES = {
     "eusexua": {
         "background-image": "images/eusexua.png",
         
-        "font-family": "OBG EUSEXUA 2024",
+        # "font-family": "OBG EUSEXUA 2024",
+        "font-family": "fonts/Eusexua.ttf",
         "font-size": "30px",
         "font-color": "#ffffff",
         

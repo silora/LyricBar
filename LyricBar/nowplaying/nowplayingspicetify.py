@@ -41,7 +41,6 @@ class NowPlayingSpicetify(NowPlaying):
     
     def message_received(self, client, server, message):
         info = json.loads(message)
-        # print(info)
         new_playing_info = None
         try:
             new_playing_info = PlayingInfo(

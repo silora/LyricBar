@@ -12,6 +12,7 @@ from ..globalvariables import TRACKING_APP
 from ..utils.dataclasses import PlayingInfo, PlayingStatusTrigger, TrackInfo
 
 
+
 class NowPlayingSystem(NowPlaying):
     def __init__(self, sync_interval=50, update_callback=None, offset=0, tracking_app=TRACKING_APP):
         super().__init__(sync_interval, update_callback)
@@ -82,7 +83,7 @@ class NowPlayingSystem(NowPlaying):
                 self.playing_info.update(info)
             else:
                 self.playing_info = info
-            if self.update_callback is not None:
+            if self.update_callback is not None and (self.playing_info.current_track_artist != "" or self.playing_info.current_track_title != ""):
                 self.update_callback(PlayingStatusTrigger.NEW_TRACK)
             self.sync_mutex.unlock()
             return
@@ -122,7 +123,7 @@ class NowPlayingSystem(NowPlaying):
         rets = []
         for app in amuids:
             if self.tracking_app.lower() in app["AppID"].split("\\")[-1].lower():
-                rets.append(app["AppID"])
+                rets.append(app["AppID"].split("\\")[-1])
         return None if len(rets) == 0 else min(rets, key=len)
 
     async def get_now_playing_info(self):
@@ -136,7 +137,6 @@ class NowPlayingSystem(NowPlaying):
                 filter(lambda s: s.source_app_user_model_id == self.app_id, sessions),
                 None,
             )
-        # print(self.session, self.app_id)
         if self.session is not None:
             info_dict = dict()
             try:
@@ -196,7 +196,7 @@ class NowPlayingSystem(NowPlaying):
                     ((info_dict["last_updated_time"] - info_dict["position"]).timestamp()*1000 + self.offset) if ("position" in info_dict and "last_updated_time" in info_dict) else None
                 ),
                 is_playing=(info_dict["playback_status"] == 4),
-                last_updated_time=datetime.timestamp(info_dict["last_updated_time"]),
+                last_updated_time=datetime.timestamp(info_dict["last_updated_time"]) if "last_updated_time" in info_dict else None,
             )
         return None
     

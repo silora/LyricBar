@@ -160,7 +160,7 @@ class LyricsMaintainer():
             self.lyrics_mutex.unlock()
             return
         self.lyrics.offset = value
-        print("LYRIC OFFSET UPDATED: ", self.lyrics.offset)
+        # print("LYRIC OFFSET UPDATED: ", self.lyrics.offset)
         self.manager.save_lyrics(self.lyrics.track, self.lyrics)
         self.lyrics_mutex.unlock()
 
@@ -181,7 +181,7 @@ class LyricsMaintainer():
             if self.lyrics.source:
                 self.update_callback("Lyrics from " + self.lyrics.source)
         self.lyrics_mutex.unlock()
-        print("SET LYRICS: ", self.now_playing.current_track, self.lyrics is not None)
+        # print("SET LYRICS: ", self.now_playing.current_track, self.lyrics is not None)
 
         
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 STYLES = {
     "chromakopia": {
-        "font-family": "Poleno",
+        # "font-family": "Poleno",
+        "font-family": "fonts/Poleno-Bold.otf",
         "font-color": "#18a450",
         
         "line-width": 0,

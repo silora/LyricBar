@@ -1,8 +1,9 @@
 STYLES = {
     "channel orange":{
         "background-color": "qradialgradient(spread:pad, cx:0.5, cy:0.4, radius:0.5, fx:0.25, fy:0.25, stop:0 #f37521, stop:1 #00000000)",
-        "font-family": "Cooper Black",
-        "font-color": "#ffffff88",
+        # "font-family": "Cooper Black",
+        "font-family": "fonts/CooperBlack.ttf",
+        "font-image": "images/channelorange.png",
         
         "line-width": 0,
         
@@ -15,7 +16,8 @@ STYLES = {
     "blonde": {
         "background-color": "qradialgradient(spread:pad, cx:0.5, cy:0.6, radius:0.5, fx:0.75, fy:0.25, stop:0 #e0e0e0, stop:1 #00000000)",
         
-        "font-family": "Blonde",
+        # "font-family": "Blonde",
+        "font-family": "fonts/Blonde.otf",
         "font-color": "#000000aa",
         "font-size": "50px",
         

@@ -2,7 +2,8 @@ STYLES = {
     "sos": {
         "background-image": "images/sos.png",
         
-        "font-family": "Superstar M54",
+        # "font-family": "Superstar M54",
+        "font-family": "fonts/SuperstarM54.ttf",
         "font-color": "#ffffff44",
         
         "line-width": 0.5,
@@ -19,7 +20,8 @@ STYLES = {
     "ctrl": {
         "background-image": "images/ctrl.png",
         
-        "font-family": "Mx437 IBM VGA 8x14",
+        # "font-family": "Mx437 IBM VGA 8x14",
+        "font-family": "fonts/Mx437IBMVGA8x14.ttf",
         "font-color": "#51f57522",
         "font-size": "35px",
         

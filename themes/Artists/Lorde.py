@@ -15,7 +15,8 @@ STYLES = {
     },
     "melodrama": {
         "background-image": "images/melodrama.png",
-        "font-family": "Canela Light Trial",
+        # "font-family": "Canela Light Trial",
+        "font-family": "fonts/Canela-Light.otf",
         "font-color": "#f7c059",
         "font-size": "33px",
         
@@ -26,7 +27,8 @@ STYLES = {
         "rule": lambda track: (track.artist.lower() == "lorde" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["green light", "sober", "homemade dynamite", "the louvre", "liability", "hard feelings/loveless", "sober ii (melodrama)", "writer in the dark", "supercut", "liability (reprise)", "perfect places"]]))
     },
     "pure heroine": {
-        "font-family": "Futura",
+        # "font-family": "Futura",
+        "font-family": "fonts/Futura.otf",
         "font-size": "25px",
         "font-color": "qlineargradient(spread:pad, x1:0, y1:0.5, x2:1, y2:0.5, stop:0 #ffffff, stop:0.9 #ffffff, stop:1 #b7b5b6)",
         

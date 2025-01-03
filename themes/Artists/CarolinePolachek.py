@@ -1,7 +1,8 @@
 STYLES = {
     "caroline polachek": {
         "background-image": "images/carolinepolachek.png",
-        "font-family": "Sinistre",
+        # "font-family": "Sinistre",
+        "font-family": "fonts/Sinistre.otf",
         "font-size": "35px",
         "font-color": "#704212",
         

@@ -1,6 +1,12 @@
-![Layout](readme_resources/gifs/beyonce_aliensuperstar.gif)
+![Layout](readme_resources/titlebar.gif)
 
-# <img src="readme_resources/icon.ico" alt="Icon" width="40" height="40"> LyricBar: <small style="color:grey">Taskbar Lyrics For Spotify (and more)</small>
+<div align="center">
+  
+# <img src="readme_resources/icon.ico" alt="Icon" width="40" height="40"> LyricBar
+
+*<p style="color:grey">Taskbar Lyrics For Spotify and More</p>*
+
+</div>
 
 ----
 ## ✏️ Notes
@@ -8,20 +14,20 @@
 - UNDER DEVELOPMENT (maybe)
 - Only tested on my own pc. Can be buggy.
 - <span style="color:red; font-weight:bold;">Also works for other music players! (Though I didn't try many...)</span>
-- VERY PRETTY!
+- Lightweight and PRETTY!
 
 ----
 
 ## ⭐ Features
 
 - Dock at taskbar, hide automatically when mouse enter or no media is playing
-    ![](readme_resources/auto_hide.gif)
+    ![](readme_resources/autohide.gif)
 - Easy lyrics source management and track / global syncing offset setting
-    ![](readme_resources/lyric_management.gif)
+    ![](readme_resources/actions.gif)
 - Track / Artist level theme customization
-    ![](readme_resources/theme_customization.gif)
+    ![](readme_resources/themes.gif)
 - STT Mode
-    ![](readme_resources/stt_mode.gif )
+    ![](readme_resources/modes.gif)
 
 ----
 
@@ -33,7 +39,9 @@
 - With Spicetify, we can directly get playback information from desktop app, which provides much more precise information.
 - Installation of Spicetify: [Refer to this.](https://spicetify.app/docs/advanced-usage/installation/)
 - Add [this modified webnowplaying extension](webnowplaying.js) to the extension folder and then update and apply the config. [Refer to this.](https://spicetify.app/docs/advanced-usage/extensions)
-
+- Known Issue: Pause and Re-start when a new track starts (so the nowplaying information is correct)
+    - A slightly noticeable pause after ~1s into the track
+    
 #### LyricBar Setup
 
 - Directly unzip from release.zip, or
@@ -133,6 +141,11 @@
 
 ## ♻️ Updates
 
+- 20250102 v0.3.0
+    - Fixed STT mode
+    - Replace faux taskbar with aero effect
+    - Fixed Spicetify syncing issues
+    - Known Issue: Pause and Re-start when a new track is playing (so the nowplaying information is correct)
 - 20241117 v0.2.0
     - Add support for STT mode
     - Fixed overlong lyrics scale
@@ -189,14 +202,13 @@
 
 ## 💖 Made With
 - PyQt5
-- pyautogui
 - pillow
 - Vosk
 - PyAudio
-<!-- - [syrics](https://github.com/akashrchandran/Syrics)
-- [spotipy](https://github.com/spotipy-dev/spotipy) -->
+- [syrics](https://github.com/akashrchandran/Syrics)
 - [pylrc](https://github.com/doakey3/pylrc)
 - [winsdk](https://github.com/pywinrt/python-winsdk)
+- [PyQt5-Frameless-Window](https://github.com/zhiyiYo/PyQt-Frameless-Window)
 - [Spicetify](https://spicetify.app)
 ----
 

@@ -45,8 +45,14 @@ def convert_to_color(color, **kwargs):
             g = QRadialGradient()
             cx = calculate(re.search(r"cx:([^,]+)", color).group(1), **kwargs)
             cy = calculate(re.search(r"cy:([^,]+)", color).group(1), **kwargs)
-            fx = calculate(re.search(r"fx:([^,]+)", color).group(1), **kwargs)
-            fy = calculate(re.search(r"fy:([^,]+)", color).group(1), **kwargs)
+            if "fx:" in color:
+                fx = calculate(re.search(r"fx:([^,]+)", color).group(1), **kwargs)
+            else:
+                fx = cx
+            if "fy:" in color:
+                fy = calculate(re.search(r"fy:([^,]+)", color).group(1), **kwargs)
+            else:
+                fy = cy
             radius = calculate(re.search(r"radius:([^,]+)", color).group(1), **kwargs)
             g.setCenter(cx, cy)
             g.setFocalPoint(fx, fy)

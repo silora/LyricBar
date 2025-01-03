@@ -86,7 +86,11 @@ class STTThread(QThread):
             except:
                 pass
         self.stream.stop_stream()
-        self.recognizer.Reset()
+        if self.recognizer.PartialResult()[17:-3].strip() != "":
+            self.recognizer.AcceptWaveform(b"")
+            self.recognizer.Reset()
+        # except Exception as e:
+        #     print(e)
         self.gracefully_out()
     
         
@@ -172,10 +176,17 @@ class STTMaintainer(QObject):
     def start_listen(self):
         if not self.running_mutex.tryLock(1000):
             return
-        if self.running:
+        if self.running or self.stopped:
             self.running_mutex.unlock()
             return
+        print("Starting STT")
         self.running = True
+        if self.stt_thread is not None:
+            try:
+                self.stt_thread.cancel()
+            except:
+                pass
+        
         self.stt_thread = STTThread(self.model, self.recognizer, self.stream)
         self.stt_thread.start()
         self.running_mutex.unlock()
@@ -186,6 +197,7 @@ class STTMaintainer(QObject):
         if not self.running:
             self.running_mutex.unlock()
             return
+        print("Stopping STT")
         self.running = False
         self.stt_thread.cancel()
         # self.line = LyricLine(-2, "♬")

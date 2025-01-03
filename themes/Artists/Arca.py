@@ -1,7 +1,8 @@
 STYLES = {
     "arca": {
         "font-color": "black",
-        "font-family": "KiCk",
+        # "font-family": "KiCk",
+        "font-family": "fonts/KiCk.otf",
         "font-size": "60px",
         
         "line-color": "#858585",

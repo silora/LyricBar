@@ -4,6 +4,42 @@
 
 /// <reference path="../globals.d.ts" />
 
+// (function test() {
+// 	console.log("Testing");
+// 	lastPaused = 0;
+// 	Spicetify.Player.addEventListener("songchange", ({ data }) => {
+// 		console.log("=======Song changed========");
+// 		wrong_beginning = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
+// 		console.log("Timestamp of the song's beginning", wrong_beginning);
+// 		setTimeout(async () => { 
+// 			console.log("Restarting player by pause and play");
+// 			Spicetify.Player.pause();
+// 			Spicetify.Player.play();
+// 			await new Promise(resolve => setTimeout(resolve, 500));
+// 			correct_beginning = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
+// 			console.log("Timestamp of the song's beginning now (fixed)", correct_beginning);
+// 			console.log("Difference", correct_beginning - wrong_beginning);
+// 			console.log("  ");
+// 		}, 1000);
+// 	});
+
+// 	Spicetify.Player.addEventListener("onplaypause", ({ data }) => {
+// 		if (Spicetify.Player.data.isPaused) {
+// 			lastPaused = Date.now();
+// 		} else {
+// 			if (lastPaused > 0){
+// 				console.log("<Paused for", Date.now() - lastPaused, ">");
+// 				lastPaused = 0;
+// 			}
+// 		}
+// 	});
+// })();
+
+
+
+
+
+
 (function WebNowPlaying() {
 	if (!Spicetify.CosmosAsync || !Spicetify.Platform.LibraryAPI) {
 		setTimeout(WebNowPlaying, 500);
@@ -41,23 +77,49 @@ class WNPReduxWebSocket {
 		// shuffle: false,
 		type: "",
 		uid: "",
-		begintime: 0
+		begintime: 0,
 	};
 	isResetting = false;
+	// useNowBeginTime = false;
+	// nowBeginTime = 0;
+	lastNext = false;
 
 	constructor() {
 		this.init();
 
-		Spicetify.Player.addEventListener("songchange", ({ data }) => this.restartPlayer(data));
-		Spicetify.Player.addEventListener("onplaypause", ({ data }) => this.updateSpicetifyInfo(data));
-		Spicetify.Player.addEventListener("onprogress", ({ data }) => this.updateSpicetifyInfo(data));
+		Spicetify.Player.addEventListener("songchange", ({ data }) => {
+			// this.useNowBeginTime = true;
+			// this.nowBeginTime = Date.now();
+			// this.updateSpicetifyInfo(data);
+			setTimeout(() => this.restartPlayer(data), 1000);
+			// if (!this.lastNext) {
+			// 	Spicetify.Player.next();
+			// 	this.lastNext = true;
+			// } else {
+			// 	this.lastNext = false;
+			// }
+		});
+		Spicetify.Player.addEventListener("onplaypause", ({ data }) => {
+			if (this.isResetting) return;
+			// this.useNowBeginTime = false;
+			// this.nowBeginTime = 0;
+			this.updateSpicetifyInfo(data);
+		});
+		Spicetify.Player.addEventListener("onprogress", ({ data }) => {
+			this.updateSpicetifyInfo(data);
+		});
 	}
 
-	restartPlayer(data) {
+	async restartPlayer(data) {
 		this.isResetting = true;
+		this.updateSpicetifyInfo(Spicetify.Player.data);
 		Spicetify.Player.pause();
-		Spicetify.Player.seek(0);
 		Spicetify.Player.play();
+		// Spicetify.Player.pause();
+		// Spicetify.Player.play();
+		// sleep for 0.05 seconds
+		await new Promise(resolve => setTimeout(resolve, 500));
+		// Spicetify.Player.seek(0);
 		this.isResetting = false;
 		this.updateSpicetifyInfo(Spicetify.Player.data);
 	}
@@ -90,6 +152,7 @@ class WNPReduxWebSocket {
 		const cover = meta.image_xlarge_url;
 		if (cover?.indexOf("localfile") === -1) this.spicetifyInfo.cover = `https://i.scdn.co/image/${cover.substring(cover.lastIndexOf(":") + 1)}`;
 		else this.spicetifyInfo.cover = "";
+		this.sendUpdate();
 	}
 
 	init() {
@@ -253,6 +316,9 @@ function OnMessageLegacy(self, message) {
 }
 
 function SendUpdateLegacy(self) {
+	if (self.isResetting) {
+		return;
+	}
 	if (!Spicetify.Player.data && cache.get("state") !== 0) {
 		cache.set("state", 0);
 		ws.send("STATE:0");
@@ -261,16 +327,26 @@ function SendUpdateLegacy(self) {
 
 	// self.spicetifyInfo.position = Spicetify.Player.getProgress();
 	// self.spicetifyInfo.volume = Math.round(Spicetify.Player.getVolume() * 100);
-	if (self.spicetifyInfo.state === "PLAYING")
-		self.spicetifyInfo.begintime = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
-
+	
 	const update = {};
+	// if (self.spicetifyInfo.state === "PLAYING")
+	// 	if (self.useNowBeginTime && self.nowBeginTime > 0){
+	// 		self.spicetifyInfo.begintime =  self.nowBeginTime;
+	// 		update["SOURCE"] = "NOW";
+	// 	}
+	// 	else{
+	// 		self.spicetifyInfo.begintime = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
+	// 		update["SOURCE"] = "PLAYER";
+	// 	}
+
+	self.spicetifyInfo.begintime = Spicetify.Player.data.timestamp - Spicetify.Player.data.positionAsOfTimestamp;
+
 	let need_update = false;
 	for (const key of Object.keys(self.spicetifyInfo)) {
 		try {
 			let value = self.spicetifyInfo[key];
 			// For numbers, round it to an integer
-			if (typeof value === "number") value = Math.round(value);
+			// if (typeof value === "number") value = Math.round(value);
 
 			// Conversion to legacy values
 			if (key === "state") value = value === "PLAYING" ? 1 : value === "PAUSED" ? 2 : 0;
@@ -349,32 +425,32 @@ function OnMessageRev1(self, message) {
 	}
 }
 
-function SendUpdateRev1(self) {
-	if (!Spicetify.Player.data && cache.get("state") !== "STOPPED") {
-		cache.set("state", "STOPPED");
-		ws.send("STATE STOPPED");
-		return;
-	}
+// function SendUpdateRev1(self) {
+// 	if (!Spicetify.Player.data && cache.get("state") !== "STOPPED") {
+// 		cache.set("state", "STOPPED");
+// 		ws.send("STATE STOPPED");
+// 		return;
+// 	}
 
-	self.spicetifyInfo.position = timeInSecondsToString(Math.round(Spicetify.Player.getProgress() / 1000));
-	self.spicetifyInfo.volume = Math.round(Spicetify.Player.getVolume() * 100);
+// 	self.spicetifyInfo.position = timeInSecondsToString(Math.round(Spicetify.Player.getProgress() / 1000));
+// 	self.spicetifyInfo.volume = Math.round(Spicetify.Player.getVolume() * 100);
 
-	for (const key of Object.keys(self.spicetifyInfo)) {
-		try {
-			let value = self.spicetifyInfo[key];
-			// For numbers, round it to an integer
-			if (typeof value === "number") value = Math.round(value);
-			// Check for null, and not just falsy, because 0 and '' are falsy
-			if (value !== null && value !== self.cache.get(key)) {
-				self.send(`${key.toUpperCase()} ${value}`);
-				self.cache.set(key, value);
-			}
-		} catch (e) {
-			self.send(`ERROR Error updating ${key} for ${self.spicetifyInfo.player}`);
-			self.send(`ERRORDEBUG ${e}`);
-		}
-	}
-}
+// 	for (const key of Object.keys(self.spicetifyInfo)) {
+// 		try {
+// 			let value = self.spicetifyInfo[key];
+// 			// For numbers, round it to an integer
+// 			if (typeof value === "number") value = Math.round(value);
+// 			// Check for null, and not just falsy, because 0 and '' are falsy
+// 			if (value !== null && value !== self.cache.get(key)) {
+// 				self.send(`${key.toUpperCase()} ${value}`);
+// 				self.cache.set(key, value);
+// 			}
+// 		} catch (e) {
+// 			self.send(`ERROR Error updating ${key} for ${self.spicetifyInfo.player}`);
+// 			self.send(`ERRORDEBUG ${e}`);
+// 		}
+// 	}
+// }
 
 // Convert seconds to a time string acceptable to Rainmeter
 function pad(num, size) {

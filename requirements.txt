@@ -1,9 +1,11 @@
 syncedlyrics
 pylrc
 PyQt5
-pyautogui
-pillow
 websocket_server
 vosk
 pyaudio
+numpy
+pyyaml
+syrics
+PyQt5-Frameless-Window
 

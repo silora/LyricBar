@@ -3,7 +3,8 @@ STYLES = {
         "background-image": "images/sophie.png",
         
         "font-color": "#ffffffbb",
-        "font-family": "Jean",
+        # "font-family": "Jean",
+        "font-family": "fonts/Jean.otf",
         "font-size": "40px",
         "font-weight": "bold",
         

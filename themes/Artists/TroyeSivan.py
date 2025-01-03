@@ -14,6 +14,8 @@ STYLES = {
         # "shadow-offset": [0, 10],
         "shadow-radius": 40,
         
+        "sustaining": "hshaking",
+        
         "rule": lambda track: (track.artist.lower() == "troye sivan" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["rush", "what's the time where you are?", "one of your girls", "in my room", "still got it", "can't go back, baby", "got me started", "silly", "honey", "how to stay with you"]])),
         
         "format": lambda line: "⚡" + line.upper() + "⚡"

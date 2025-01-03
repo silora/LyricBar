@@ -2,7 +2,8 @@ STYLES = {
     "newjeans": {
         "background-image": "images/newjeans.png",
         
-        "font-family": "Binggrae",
+        # "font-family": "Binggrae",
+        "font-family": "fonts/Binggrae-Bold.ttf",
         "font-size": "35px",
         "font-color": "#b6d6ed",
         

@@ -38,35 +38,8 @@ def default_formatter(line):
     if line == "":
         return "♬"
     return line
-    
-STYLES = {
-    "default": {
-        "background-color": "#00000000",
-        
-        "font-color": "#bbbbbb",
-        "font-family": "Spotify Mix, Arial, Microsoft YaHei UI",
-        "font-size": "30px",
-        "font-weight": "normal",
-        "font-italic": False,
-        
-        
-        "line-color": "#7c7a77",
-        "line-width": 0.3,
 
-        "use-shadow": True,
-        "shadow-color": "#ffff97",
-        "shadow-offset": [0, 0],
-        "shadow-radius": 4,
-        
-        "flip-text": False,
-        
-        "format": default_formatter,
-        
-        "entering": "fadein",
-        "sustaining": "flickering",
-        "leaving": "fadeout"
-    }
-}
+STYLES = dict()
 
 import os
 import importlib.util
@@ -76,25 +49,67 @@ import sys
 from .utils.tools import hex_to_rgba
 from .utils.dataclasses import TrackInfo
 from .globalvariables import DEFAULT_THEME, THEME_FOLDER
-
+from PyQt5.QtGui import QFontDatabase
 import glob
-theme_files = glob.glob('**/*.py', root_dir=THEME_FOLDER, recursive=True)
-theme_files = filter(lambda x: x.endswith(".py"), theme_files)
+# theme_files = glob.glob('**/*.py', root_dir=THEME_FOLDER, recursive=True)
+def search_py(rootdir):
+    file_list = []
+    for root, directories, files in os.walk(rootdir):
+        root = root.replace(rootdir, "")[1:]
+        for file in files:
+            if(file.endswith(".py")):
+                file_list.append(os.path.join(root, file))
+    return file_list
 
-for theme_file in theme_files:
-    theme_name = theme_file[:-3]
-    if theme_name not in STYLES:
-        spec = importlib.util.spec_from_file_location("styles", os.path.join(THEME_FOLDER, theme_file))
-        styles_module = importlib.util.module_from_spec(spec)
-        sys.modules["styles"] = styles_module
-        spec.loader.exec_module(styles_module)
-        new_styles = styles_module.STYLES
-        for k in list(new_styles.keys()):
-            new_styles[theme_file.replace(".py", "").replace("\\", "/") + " - " + k] = new_styles.pop(k)
-        STYLES.update(new_styles)
+def load_themes():
+    global STYLES
+    STYLES = {
+        "default": {
+            "background-color": "#00000000",
+            
+            "font-color": "#bbbbbb",
+            "font-family": "Spotify Mix, Arial, Microsoft YaHei UI",
+            "font-size": "30px",
+            "font-weight": "normal",
+            "font-italic": False,
+            
+            
+            "line-color": "#7c7a77",
+            "line-width": 0.3,
 
-print("Loaded Styles:", STYLES.keys())
+            "use-shadow": True,
+            "shadow-color": "#ffff97",
+            "shadow-offset": [0, 0],
+            "shadow-radius": 4,
+            
+            "flip-text": False,
+            
+            "format": default_formatter,
+            
+            "entering": "fadein",
+            "sustaining": "flickering",
+            "leaving": "fadeout"
+        }
+    }
+    
+    theme_files = search_py(THEME_FOLDER)
+    theme_files = filter(lambda x: x.endswith(".py"), theme_files)
 
+    for theme_file in theme_files:
+        theme_name = theme_file[:-3]
+        if theme_name not in STYLES:
+            spec = importlib.util.spec_from_file_location("styles", os.path.join(THEME_FOLDER, theme_file))
+            styles_module = importlib.util.module_from_spec(spec)
+            sys.modules["styles"] = styles_module
+            spec.loader.exec_module(styles_module)
+            new_styles = styles_module.STYLES
+            for k in list(new_styles.keys()):
+                new_styles[theme_file.replace(".py", "").replace("\\", "/") + " - " + k] = new_styles.pop(k)
+            STYLES.update(new_styles)
+
+    print("Loaded Styles:", STYLES.keys())
+
+load_themes()
 
 def get_style(track: TrackInfo):
     stl = STYLES["default"].copy()
@@ -110,13 +125,16 @@ def get_style(track: TrackInfo):
             if "format" in style:
                 stl["format"] = lambda line: (style["format"](STYLES["default"]["format"](line)))
             if "font-family" in style:
-                stl["font-family"] = ", ".join(list(filter(lambda x: x != " ", [_.strip() for _ in style["font-family"].split(",") + STYLES["default"]["font-family"].split(",")])))
+                if any([_ in style["font-family"].lower() for _ in [".ttf", ".otf"]]) and os.path.exists(style["font-family"]):
+                        stl["font-family"] = style["font-family"]
+                else:
+                    stl["font-family"] = ", ".join(list(filter(lambda x: x != " ", [_.strip() for _ in style["font-family"].split(",") + STYLES["default"]["font-family"].split(",")])))
             break
-    print(DEFAULT_THEME)
+    # print(DEFAULT_THEME)
     if stl_name == "default" and (DEFAULT_THEME is not None and DEFAULT_THEME in STYLES):
         stl_name = DEFAULT_THEME.replace("\\", "/")
         style = STYLES[stl_name]
-        print(f"Using Default theme {stl_name}")
+        # print(f"Using Default theme {stl_name}")
         stl.update(STYLES[stl_name])
         if "format" in style:
             stl["format"] = lambda line: (style["format"](STYLES["default"]["format"](line)))         

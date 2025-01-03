@@ -2,7 +2,8 @@ STYLES = {
     "immunity": {
         "background-image": "images/immunity.png",
         
-        "font-family": "Astloch",
+        # "font-family": "Astloch",
+        "font-family": "fonts/Astloch-Bold.ttf",
         "font-color": "#f3f2ef",
         "font-weight": "bold",
         "font-size": "40px",
@@ -17,7 +18,8 @@ STYLES = {
     "charm": {
         "background-color": "qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #43340d, stop:1 #2a1502)",
         
-        "font-family": "Xaltid",
+        # "font-family": "Xaltid",
+        "font-family": "fonts/Xaltid-Bold.ttf",
         "font-color": "#8b893f",
         "font-weight": "bold",
         "font-size": "40px",

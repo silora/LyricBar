@@ -1,4 +1,5 @@
 import math
+import subprocess
 
 
 def hex_to_rgba(hex_color, alpha=255):
@@ -15,3 +16,11 @@ def ms_to_mm_ss(ms):
     minutes = math.floor(seconds // 60)
     seconds = math.floor(seconds % 60)
     return f"{minutes:02}:{seconds:02}"
+
+
+def check_if_windows_locked():
+    process_name='LogonUI.exe'
+    callall='TASKLIST'
+    outputall=subprocess.check_output(callall)
+    outputstringall=str(outputall)
+    return process_name in outputstringall

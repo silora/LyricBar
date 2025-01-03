@@ -216,14 +216,16 @@ class LyricsThread(QThread):
         #     self.lock.unlock()
         #     print("ENDING SEARCH 1", self.track)
         # if self.cancelled:
+        # print("gracefully out")
         if self.holder is not None:
             self.holder_lock.lock()
             self.holder.remove(self)
             self.holder_lock.unlock()
+        self.deleteLater()
         return
 
     def run(self):
-        print("TRYING SEARCH", self.track)
+        # print("TRYING SEARCH", self.track)
         # while self.waiting_counter < 50 and not self.lock.tryLock(100):
         #     self.waiting_counter += 1
         #     if self.cancelled:
@@ -305,7 +307,7 @@ class LyricsManager():
         self.gripper_lock = QMutex()
     
     def get_lyrics(self, track: TrackInfo, callback: callable = None, force_refresh=False, source=None):
-        print("GETTING LYRICS FOR ", str(track), "FROM ", source)
+        # print("GETTING LYRICS FOR ", str(track), "FROM ", source)
         
         found = False
         for lg in self.lyrics_gripper:

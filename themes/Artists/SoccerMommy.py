@@ -2,7 +2,8 @@ STYLES = {
     "color theory": {
         # "background-image": "images/soccermommy.png",
         
-        "font-family": "Pixelon",
+        # "font-family": "Pixelon",
+        "font-family": "fonts/Pixelon.ttf",
         "font-color": "#e8cdcdaa",
         "font-size": "30px",
         

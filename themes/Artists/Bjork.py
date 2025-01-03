@@ -1,7 +1,8 @@
 STYLES = {
     "post": {
         "font-color": "#d58fe8",
-        "font-family": "Bjork",
+        # "font-family": "Bjork",
+        "font-family": "fonts/Bjork.ttf",
         "font-size": "40px",
         
         "line-color": "#a22929",
@@ -17,10 +18,12 @@ STYLES = {
     },
     "vespertine": {
         "font-color": "#ffffff",
-        "font-family": "vespertine",
+        # "font-family": "vespertine",
+        "font-family": "fonts/Vespertine.ttf",
         "font-size": "50px",
         
-        "line-width": 0,
+        "line-width": 0.75,
+        "line-color": "#ffffff",
         
         "use-shadow": False,
         

@@ -1,43 +1,63 @@
 import math
 from PyQt5.QtWidgets import QLabel
-from PyQt5.QtCore import Qt, QSize, pyqtProperty, pyqtSignal, QMutex, QRect
-from PyQt5.QtGui import QBrush, QFontMetrics, QPainter, QPainterPath, QPen, QColor, QPixmap, QTransform
+from PyQt5.QtCore import Qt, QSize, pyqtProperty, pyqtSignal, QMutex, QRect, QByteArray, QFile
+from PyQt5.QtGui import QBrush, QFontMetrics, QPainter, QPainterPath, QPen, QColor, QPixmap, QTransform, QFontMetricsF, QFontDatabase, QFont, QFontInfo
+import os
 
 
 
-# QPainterPath Form::pathText(int x, int y, QFont font, const QString &text)
-# {
-#     QPainterPath path;
- 
-#     qreal lineHeight = QFontMetricsF(font).height();
-#     int lineCount = 1;
-#     QByteArray content = text.toUtf8();
-#     QBuffer buff(&content);
-#     buff.open(QBuffer::ReadOnly);
-#     while(!buff.atEnd()) {
-#         QByteArray line = buff.readLine();
-#         path.addText(x, y + lineCount * lineHeight, font, line);
-#         lineCount++;
-#     }
-#     return path;
+FONT_DB = QFontDatabase
+FONT_DICT = {}
+
+get_path_lock = QMutex()
 
 def getTextPath(font, text, alignment):
-    metrics = QFontMetrics(font)
-    line_height = metrics.height()
-    lines = text.split("\n")
-    widths = [metrics.boundingRect(line).width() for line in lines]
-    max_width = max(widths)
-    # print(lines)
-    path = QPainterPath()
-    for idx, line in enumerate(lines):
-        if alignment & Qt.AlignmentFlag.AlignLeft:
-            path.addText(0, line_height * idx, font, line)
-            pass
-        elif alignment & Qt.AlignmentFlag.AlignRight:
-            path.addText(max_width - widths[idx], line_height * idx, font, line)
-        elif alignment & Qt.AlignmentFlag.AlignHCenter:
-            path.addText((max_width - widths[idx]) / 2, line_height * idx, font, line)
-    return path
+    for i in range(5):
+        font = QFont(font) if isinstance(font, str) else font
+        font.setRawMode(True)
+        # font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
+        metrics = QFontMetricsF(font)
+        line_height = metrics.height()
+        lines = text.split("\n")
+        widths = [metrics.tightBoundingRect(line).width() for line in lines]
+        max_width = max(widths)
+        # print(lines)
+        path = QPainterPath()
+        for idx, line in enumerate(lines):
+            if alignment & Qt.AlignmentFlag.AlignLeft:
+                path.addText(0, line_height * idx, font, line)
+            elif alignment & Qt.AlignmentFlag.AlignRight:
+                path.addText(max_width - widths[idx], line_height * idx, font, line)
+            else:
+                path.addText((max_width - widths[idx]) / 2, line_height * idx, font, line)
+        if path.boundingRect().height() >= 3:
+            # if i > 0:
+            #     output = QPixmap(math.ceil(path.boundingRect().width()), math.ceil(path.boundingRect().height()))
+            #     output.fill(Qt.GlobalColor.transparent)
+            #     painter = QPainter(output)
+            #     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            #     painter.fillPath(path.translated(-path.boundingRect().topLeft()), QColor(255, 255, 255))
+            #     out_file = f"log_images/{text}_true.png"
+            #     output.save(out_file, "png")
+            #     painter.end()
+            # print("True", {"family": QFontInfo(font).family(), "pointSize": QFontInfo(font).pointSize(), "pixelSize": QFontInfo(font).pixelSize(), "weight": QFontInfo(font).weight(), "italic": QFontInfo(font).italic(), "styleName": QFontInfo(font).styleName(), "styleHint": QFontInfo(font).styleHint(), "fixedPitch": QFontInfo(font).fixedPitch(), "exactMatch": QFontInfo(font).exactMatch(), "style": QFontInfo(font).style()})
+            # get_path_lock.unlock()
+            return path
+        if path.boundingRect().height() < 3 or i > 0:
+            # output = QPixmap(math.ceil(path.boundingRect().width()), math.ceil(path.boundingRect().height()))
+            # output.fill(Qt.GlobalColor.transparent)
+            # painter = QPainter(output)
+            # painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            # painter.fillPath(path.translated(-path.boundingRect().topLeft()), QColor(255, 255, 255))
+            # out_file = f"log_images/{text}.png"
+            # output.save(out_file, "png")
+            # painter.end()
+            # print(lines, line_height, max_width, widths, path.boundingRect().width(), path.boundingRect().height())    
+            # print((max_width - widths[0]) / 2, line_height * 0)
+            print("Failed", {"family": QFontInfo(font).family(), "pointSize": QFontInfo(font).pointSize(), "pixelSize": QFontInfo(font).pixelSize(), "weight": QFontInfo(font).weight(), "italic": QFontInfo(font).italic(), "styleName": QFontInfo(font).styleName(), "styleHint": QFontInfo(font).styleHint(), "fixedPitch": QFontInfo(font).fixedPitch(), "exactMatch": QFontInfo(font).exactMatch(), "style": QFontInfo(font).style()})
+            print(metrics.height(), metrics.ascent(), metrics.descent(), metrics.leading(), metrics.lineSpacing())
+    # get_path_lock.unlock()
+    return None
     
 
 class OutlinedLabel(QLabel):
@@ -71,6 +91,10 @@ class OutlinedLabel(QLabel):
 
         self.setBrush(brushcolor)
         self.setPen(linecolor)
+        
+        # global FONT_DB
+        # if not FONT_DB:
+        #     FONT_DB = QFontDatabase
         
     def setLineWidth(self, width):
         self.w = width
@@ -135,14 +159,49 @@ class OutlinedLabel(QLabel):
         self.updatePath()
         # self.update_signal.emit()
         
-    @pyqtProperty(str)
+    @pyqtProperty(object)
     def font_family(self):
         return self.font().family()
     
     @font_family.setter
     def font_family(self, value):
-        f = self.font()
-        f.setFamily(value)
+        f = QFont("Times New Roman")
+        # if len(QFontDatabase.families()) != 0:
+        #     QFontDatabase.removeAllApplicationFonts()
+        # families = self.font_db.families()
+
+        # for family in families:
+        #     print(family)
+        
+        if not any([_ in value.lower() for _ in [".ttf", ".otf", ".ttc"]]):
+            f.setFamily(value)
+        else:
+            value = os.path.abspath(value)
+            if value in FONT_DICT:
+                # print("font already loaded")
+                id = FONT_DICT[value]
+                fam = FONT_DB.applicationFontFamilies(id)[0]
+                f.setFamily(fam)
+            else:
+                # print("loading font")
+                for i in range(10):
+                    fontfile = QFile(value)
+                    fontfile.open(QFile.OpenModeFlag.ReadOnly)
+                    fontdata = QByteArray(fontfile.readAll())
+                    id = FONT_DB.addApplicationFontFromData(fontdata)
+                    if id != -1:
+                        FONT_DICT[value] = id
+                        break
+                if id == -1:
+                    # print("failed to load font")
+                    pass
+                if id != -1:
+                    fam = FONT_DB.applicationFontFamilies(id)[0]
+                    f.setFamily(fam)
+        f.setWeight(self.font().weight())
+        f.setItalic(self.font().italic())
+        f.setPixelSize(self.font().pixelSize())
+        self.font().cleanup()
         self.setFont(f)
         self.updatePath()
         
@@ -153,7 +212,7 @@ class OutlinedLabel(QLabel):
     @font_weight.setter
     def font_weight(self, value):
         f = self.font()
-        f.setWeight(value)
+        f.setWeight(QFont.Weight(value))
         self.setFont(f)
         self.updatePath()
         
@@ -232,16 +291,21 @@ class OutlinedLabel(QLabel):
         if not self.path_mutex.tryLock():
             return
         self.path = getTextPath(self.font(), self.text(), self.alignment())
+        
+        if self.path is None:
+            self.path_mutex.unlock()
+            return
         self.path.setFillRule(Qt.FillRule.WindingFill)
-        self.path = self.path.simplified()
+        # self.path = self.path.simplified()
+        # print(self.path.boundingRect())
         w = self.outlineThickness()
         rect = self.rect()
         metrics = QFontMetrics(self.font())
-        if self.font() is not None:
-            f = self.font()
-            f.setPixelSize(self.font_size)
-            self.setFont(f)
-        tr = self.path.boundingRect().adjusted(0, 0, int(w), int(w))
+        # if self.font() is not None:
+        #     f = self.font()
+        #     f.setPixelSize(self.font_size)
+        #     self.setFont(f)
+        # tr = self.path.boundingRect().adjusted(0, 0, int(w), int(w))
         if self.indent() == -1:
             if self.frameWidth():
                 self._indent = [(metrics.boundingRect('x').width() + w * 2) / 2] * 4
@@ -326,9 +390,6 @@ class OutlinedLabel(QLabel):
         qp.translate(self._indent[1], self._indent[0])
 
         qp.setRenderHint(QPainter.RenderHint.Antialiasing)
-        if self.flip:
-            qp.scale(-1, 1)
-            qp.translate(-self.qmap.width(), 0)
         if self.outlineThickness() > 0:
             self.pen.setWidthF(w * 2)
             qp.strokePath(self.path, self.pen)
@@ -337,10 +398,12 @@ class OutlinedLabel(QLabel):
         
         if self.qmap.width() > self.width() and self.use_scale: # or self.qmap.height() > self.height():
             scale = min(self.width() / self.qmap.width(), self.height() / self.qmap.height())
-            self.qmap = self.qmap.scaled(int(self.qmap.width() * scale), int(self.qmap.height() * scale))
+            self.qmap = self.qmap.scaled(int(self.qmap.width() * scale), int(self.qmap.height() * scale), aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.SmoothTransformation)
         
         self.path_mutex.unlock()
         self.qmap_mutex.unlock()
+        
+        self.update()
     
     def paintEvent(self, event):
         if not self.qmap_mutex.tryLock():
@@ -349,7 +412,7 @@ class OutlinedLabel(QLabel):
             self.qmap_mutex.unlock()
             return
         qp = QPainter(self)
-        qp.setRenderHints(QPainter.RenderHint.LosslessImageRendering | QPainter.RenderHint.Antialiasing) # | QPainter.RenderHint.SmoothPixmapTransform)
+        qp.setRenderHints(QPainter.RenderHint.Antialiasing) # | QPainter.RenderHint.SmoothPixmapTransform)
         # qp.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         
         qmap = self.qmap
@@ -357,7 +420,10 @@ class OutlinedLabel(QLabel):
         scale = self.scale
         # qp.scale(scale, scale)
         if scale != 1:
-            qmap = qmap.scaled(int(qmap.width() * scale), int(qmap.height() * scale), Qt.AspectRatioMode.KeepAspectRatioByExpanding, transformMode=Qt.SmoothTransformation)
+            qmap = qmap.scaled(int(qmap.width() * scale), int(qmap.height() * scale), transformMode=Qt.SmoothTransformation)
+        if self.flip:
+            qp.scale(-1, 1)
+            qp.translate(-self.width(), 0)
         qp.setOpacity(self.opacity)
         
         x, y = 0, 0
@@ -383,19 +449,23 @@ class OutlinedLabel(QLabel):
         #     dis_1 = math.sqrt((pos_1[0] - pos[0]) ** 2 + (pos_1[1] - pos[1]) ** 2)
         #     dis_2 = math.sqrt((pos_2[0] - pos[0]) ** 2 + (pos_2[1] - pos[1]) ** 2)
             
-            
-        #     if dis_1 == 0:
-        #         dis_1 = 1
-        #         dis_2 = 1
-        #     else:  
-                # qp.setOpacity(self.opacity * dis_2 / (dis_1 + dis_2 + 0.00001))
-                # qp.drawPixmap(pos_1[0], pos_1[1], qmap)
-                # qp.setOpacity(self.opacity * dis_1 / (dis_1 + dis_2 + 0.00001))
-                # qp.drawPixmap(pos_2[0], pos_2[1], qmap)
-            # qp.drawPixmap(int((x + self.x_pos)), int((y + self.y_pos)), qmap)
-            # print("motion", pos, pos_1, pos_2, self.opacity * dis_2 / (dis_1 + dis_2 + 0.00001), self.opacity * dis_1 / (dis_1 + dis_2 + 0.00001))
+        #     if dis_1 != 0:
+        #         new_map = QPixmap(qmap.width() + (1 if (pos_1[0] != pos_2[1]) else 0), qmap.height() + (1 if (pos_1[1] != pos_2[1]) else 0))
+        #         new_map.fill(Qt.GlobalColor.transparent)
+        #         painter = QPainter(new_map)
+        #         # painter.setOpacity(self.opacity * min(1, dis_2 / (dis_1 + dis_2 + 0.00001)))
+        #         painter.drawPixmap(0, 0, qmap)
+        #         # painter.setCompositionMode(QPainter.CompositionMode_ColorDodge)
+        #         painter.setOpacity(self.opacity * min(1, dis_1 / (dis_1 + dis_2 + 0.00001)))
+        #         painter.drawPixmap(1 if (pos_1[0] != pos_2[1]) else 0, 1 if (pos_1[1] != pos_2[1]) else 0, qmap.copy(QRect(0, 0, qmap.width()//2, qmap.height())))
+        #         painter.end()
+        #         qmap = new_map
+        #     qp.drawPixmap(pos_1[0], pos_1[1], qmap)
+        #     # qp.drawPixmap(int((x + self.x_pos)), int((y + self.y_pos)), qmap)
+        #     # print("motion", pos, pos_1, pos_2, self.opacity * dis_2 / (dis_1 + dis_2 + 0.00001), self.opacity * dis_1 / (dis_1 + dis_2 + 0.00001))
         # else:
-        qp.drawPixmap(int((x + self.x_pos)), int((y + self.y_pos)), qmap, )
+        #     qp.drawPixmap(int((x + self.x_pos)), int((y + self.y_pos)), qmap)
+        qp.drawPixmap(int((x + self.x_pos)), int((y + self.y_pos)), qmap)
         qp.end()
         self.qmap_mutex.unlock()
         

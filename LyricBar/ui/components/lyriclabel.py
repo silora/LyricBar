@@ -5,7 +5,7 @@ from .pad import Pad
 from .outlinedlabel import OutlinedLabel
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QSequentialAnimationGroup, QAbstractAnimation
-from PyQt5.QtGui import QBrush, QColor, QPixmap, QGradient
+from PyQt5.QtGui import QBrush, QColor, QPixmap, QGradient, QPainterPath, QPainter
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 from PyQt5.QtCore import QTimer, pyqtProperty
 
@@ -22,7 +22,7 @@ class LyricAnimation(QAbstractAnimation):
         
         self.entering_time = 150
         self.leaving_time = 150
-        self.sustaining_time = 5000
+        self.sustaining_time = 3000
         
         self.last_frame_type = None
         
@@ -114,55 +114,112 @@ class LyricAnimation(QAbstractAnimation):
       
 
 class LyricLabel(OutlinedLabel):
-    def __init__(self, width, height, text=None, parent=None, **kwargs):
+    def __init__(self, text=None, parent=None, **kwargs):
         
-        self.imagepad = QLabel("", parent=parent)
-        self.imagepad.setStyleSheet("background-color: transparent")
-        self.imagepad.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.pad = Pad(QBrush(QColor(0,0,0,0)), parent=parent)
-        self.pad.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        super().__init__(text=text, relative_outline=False, linewidth=0, brushcolor=QColor(0,0,0,0), linecolor=QColor(0,0,0,0), parent=parent)
-        self.setAlignment(Qt.AlignCenter)
+        self._rounded_radius = 0
         
         
-        self.progressbar = ProgressBar(parent=parent)
-        glow = QGraphicsDropShadowEffect()
-        glow.setColor(QColor(0, 0, 0, 200))
-        glow.setBlurRadius(15)
-        glow.setOffset(0, 0)
-        self.progressbar.setGraphicsEffect(glow)
-
+        self.back_imagepad = QLabel("", parent=parent)
+        self.back_imagepad.setStyleSheet("background-color: transparent")
+        self.back_imagepad.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.back_pad = Pad(QBrush(QColor(0,0,0,0)), parent=parent)
+        self.back_pad.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.animation = None
         self.entering = None
         self.sustaining = None
         self.leaving = None
         
-        self.animation = None
+        super().__init__(text=text, relative_outline=False, linewidth=0, brushcolor=QColor(0,0,0,0), linecolor=QColor(0,0,0,0), parent=parent)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        self.setFixedSize(width, height)
+        self.front_imagepad = QLabel("", parent=parent)
+        self.front_imagepad.setStyleSheet("background-color: transparent")
+        self.front_imagepad.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.front_pad = Pad(QBrush(QColor(0,0,0,0)), parent=parent)
+        self.front_pad.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.progressbar = ProgressBar(parent=parent)
+        self.progressbar_offset = 0
+        self.glow_color = QColor(0, 0, 0, 200)
+        
+        glow = QGraphicsDropShadowEffect()
+        glow.setColor(self.glow_color)
+        glow.setBlurRadius(15)
+        glow.setOffset(0, 0)
+        self.progressbar.setGraphicsEffect(glow)
+
         self.setStyle(**kwargs)
         
-        
-        self.pad.show()
-        self.imagepad.show()
+        self.back_pad.show()
+        self.back_imagepad.show()
         self.show()
+        self.front_pad.show()
+        self.front_imagepad.show()
         
         self.left_time = -1
         
+    @pyqtProperty(float)
+    def rounded_radius(self):
+        return self._rounded_radius
+    
+    @rounded_radius.setter
+    def rounded_radius(self, value):
+        self._rounded_radius = value
+        if value > 0:
+            # self.pad.setStyleSheet(f"border-radius: {value}px;")
+            # self.imagepad.setStyleSheet(f"border-radius: {value}px;")
+            self.back_pad.rounded_radius = value
+            self.front_pad.rounded_radius = value
+        else:
+            # self.pad.setStyleSheet("")
+            # self.imagepad.setStyleSheet("")
+            self.back_pad.rounded_radius = 0
+            self.front_pad.rounded_radius = 0
+        self.back_pad.update()
+        self.front_pad.update()
+        
+    
+    @pyqtProperty(float)
+    def opacity(self):
+        return self._opacity
+    
+    @opacity.setter
+    def opacity(self, value):
+        self._opacity = value
+        glow = self.graphicsEffect()
+        if glow is not None:
+            color = QColor(self.glow_color)
+            color.setAlphaF(color.alphaF() * value)
+            glow.setColor(color)
+        self.update()
+        
     def setFixedSize(self, width, height):
         super().setFixedSize(width, height)
-        self.pad.setGeometry(0, 0, width, height)
-        self.imagepad.setGeometry(0, 0, width, height)
-        self.progressbar.setGeometry((self.width() - 400) // 2, self.height() - 10, 400, 8)
+        self.back_pad.setGeometry(0, 0, width, height)
+        self.back_imagepad.setGeometry(0, 0, width, height)
+        self.front_pad.setGeometry(0, 0, width, height)
+        self.front_imagepad.setGeometry(0, 0, width, height)
+        self.progressbar.setGeometry((self.width() - 400) // 2, self.height() - 10 + self.progressbar_offset, 400, 8)
+        
+    def move(self, x, y):
+        super().move(x, y)
+        self.back_pad.move(x, y)
+        self.back_imagepad.move(x, y)
+        self.front_pad.move(x, y)
+        self.front_imagepad.move(x, y)
+        self.progressbar.move(x + (self.width() - 400) // 2, y + self.height() - 10 + self.progressbar_offset)
         
     def paintEvent(self, event):
         super().paintEvent(event)
         
     def setHidden(self, hidden):
-        self.pad.setHidden(hidden)
-        self.imagepad.setHidden(hidden)
-        self.progressbar.setHidden(hidden)
+        self.back_pad.setHidden(hidden)
+        self.back_imagepad.setHidden(hidden)
         super().setHidden(hidden)
+        self.front_pad.setHidden(hidden)
+        self.front_imagepad.setHidden(hidden)
+        self.progressbar.setHidden(hidden)
             
     def setStyle(self, **kwargs):
         if "font-size" in kwargs:
@@ -177,24 +234,48 @@ class LyricLabel(OutlinedLabel):
             self.setBrush(convert_to_color(kwargs["font-color"], width=self.width(), height=self.height()))
         if "use-italic" in kwargs:
             self.setFontItalic(kwargs["use-italic"])
+        if "flip-text" in kwargs:
+            self.flip = kwargs["flip-text"]
+        else:
+            self.flip = False
+            
             
         if "line-color" in kwargs:
             self.setPen(convert_to_color(kwargs["line-color"]))
         if "line-width" in kwargs:
             self.setLineWidth(kwargs["line-width"])
-            
-        if "background-image" in kwargs:
-            self.pad.setColor(QColor(0,0,0,0))
-            self.imagepad.setPixmap(QPixmap(kwargs["background-image"]).scaled(1, self.height(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
-
-        elif "background-color" in kwargs:
-            self.imagepad.clear()
-            color = convert_to_color(kwargs["background-color"])
-            # print(isinstance(color, QGradient))
-            # print(color.stops())
-            self.pad.setColor(convert_to_color(kwargs["background-color"], width=self.width(), height=self.height()))
-
         
+        for key, ip, p in [("background", self.back_imagepad, self.back_pad), ("foreground", self.front_imagepad, self.front_pad)]:
+        
+            if f"{key}-image" in kwargs:
+                p.setColor(QColor(0,0,0,0))
+                px = QPixmap(kwargs[f"{key}-image"]).scaledToHeight(self.height(), Qt.SmoothTransformation)
+                if px.width() > self.width():
+                    px = px.copy((px.width() - self.width()) // 2, 0, self.width(), self.height())
+                if self.rounded_radius > 0:
+                    path = QPainterPath()
+                    path.addRoundedRect(0, 0, self.width(), self.height(), self.rounded_radius, self.rounded_radius)
+                    new_px = QPixmap(self.width(), self.height())
+                    new_px.fill(Qt.GlobalColor.transparent)
+                    painter = QPainter(new_px)
+                    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                    painter.setClipPath(path)
+                    painter.drawPixmap(0, 0, px)
+                    painter.end()
+                    px = new_px
+                ip.setPixmap(px)
+
+            elif f"{key}-color" in kwargs:
+                ip.clear()
+                if self.rounded_radius > 0:
+                    p.setStyleSheet(f"border-radius: {self.rounded_radius}px;")
+                else:
+                    p.setStyleSheet("")
+                p.setColor(convert_to_color(kwargs[f"{key}-color"], width=self.width(), height=self.height()))
+            else:
+                ip.clear()
+                p.setStyleSheet("background-color: transparent")
+
         if "progress-color" in kwargs:
             self.progressbar.progress_color = convert_to_color(kwargs["progress-color"])
         elif "font-image" in kwargs:
@@ -211,7 +292,8 @@ class LyricLabel(OutlinedLabel):
             
         if "use-shadow" in kwargs and kwargs["use-shadow"]:
             glow = QGraphicsDropShadowEffect()
-            glow.setColor(convert_to_color(kwargs["shadow-color"]))
+            self.glow_color = convert_to_color(kwargs["shadow-color"])
+            glow.setColor(self.glow_color)
             glow.setBlurRadius(kwargs["shadow-radius"])
             glow.setOffset(*kwargs["shadow-offset"])
             self.setGraphicsEffect(glow)
@@ -257,11 +339,11 @@ class LyricLabel(OutlinedLabel):
             if sustaining == "flickering":
                 self.sustaining = [("opacity", [(0, 1.0), (0.5, 0.7), (1, 1.0)])]
             elif sustaining == "hshaking":
-                self.sustaining = [("x_pos", [(0, 0), (0.25, 5), (0.75, -5), (1, 0)])]
+                self.sustaining = [("x_pos", [(0, 0), (0.25, 2), (0.75, -2), (1, 0)])]
             elif sustaining == "vshaking":
-                self.sustaining = [("y_pos", [(0, 0), (0.25, 5), (0.75, -5), (1, 0)])]
+                self.sustaining = [("y_pos", [(0, 0), (0.25, 2), (0.75, -2), (1, 0)])]
             elif sustaining == "zooming":
-                self.sustaining = [("scale", [(0, 1), (0.25, 1.05), (0.75, 0.95), (1, 1)])]
+                self.sustaining = [("scale", [(0, 1), (0.5, 0.9), (1, 1)])]
             else:
                 self.sustaining = None
                 
@@ -306,10 +388,19 @@ class LyricLabel(OutlinedLabel):
                 duration = int(duration)
         else:
             duration = -1
-        if self.animation is not None and self.animation.state() == QPropertyAnimation.Running:
+        
+        # PYQT5
+        # if self.animation is not None and self.animation.state() == QPropertyAnimation.Running:
+        #     self.animation.stop()
+        # PyQt5
+        if self.animation is not None and self.animation.state() == QAbstractAnimation.State.Running:
             self.animation.stop()
         if use_animation:
-            self.animation = LyricAnimation(self, duration, entering=self.entering, sustaining=self.sustaining, leaving=self.leaving)
+            if self.animation is None:
+                self.animation = LyricAnimation(self, duration, entering=self.entering, sustaining=self.sustaining, leaving=self.leaving)
+            else:
+                self.animation.setAnimation(entering=self.entering, sustaining=self.sustaining, leaving=self.leaving)
+                self.animation.setDuration(duration)
             self.animation.start()
             if start_time is not None:
                 self.animation.setCurrentTime(int(datetime.now().timestamp() * 1000 - start_time))

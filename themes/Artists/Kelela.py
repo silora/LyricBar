@@ -2,7 +2,8 @@ STYLES = {
     "raven": {
         "background-image": "images/raven.png",
         
-        "font-family": "Engravers' Gothic",
+        # "font-family": "Engravers' Gothic",
+        "font-family": "fonts/EngraversGothic.otf",
         "font-size": "30px",
         "font-color": "#1e1e1eaa",
         

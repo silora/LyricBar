@@ -2,7 +2,8 @@ STYLES = {
     "the land is inhospitable": {
         "background-image": "images/thelandisinhospitable.png",
         
-        "font-family": "Tofino Pro Personal",
+        # "font-family": "Tofino Pro Personal",
+        "font-family": "fonts/Tofino.otf",
         "font-color": "#000000",
         
         "line-width": 0.75,
@@ -18,7 +19,8 @@ STYLES = {
     "laurel hell": {
         "background-image": "images/laurelhell.png",
         
-        "font-family": "Laurel Hell Hand2",
+        # "font-family": "Laurel Hell Hand2",
+        "font-family": "fonts/LaurelHell.otf",
         "font-color": "#ffffff",
         "font-size": "35px",
         
@@ -33,7 +35,8 @@ STYLES = {
     "be the cowboy": {
         "background-image": "images/bethecowboy.png",
         
-        "font-family": "SantoroScriptJF",
+        # "font-family": "SantoroScriptJF",
+        "font-family": "fonts/SantoroScriptJF.otf",
         "font-size": "40px",
         "font-color": "#00000000",
         
@@ -49,14 +52,17 @@ STYLES = {
     "puberty 2": {
         "background-image": "images/puberty2.png",
         
-        "font-family": "Edwardian Script ITC",
+        # "font-family": "Edwardian Script ITC",
+        "font-family": "fonts/EdwardianScriptITC.ttf",
         "font-image": "images/puberty2text.png",
         "font-size": "50px",
         "font-weight": "black",
         
         "line-width": 0,
         
-        "use-shadow": False,
+        "use-shadow": True,
+        "shadow-color": "#ffffff",
+        "shadow-radius": 10,
         
         "rule": lambda track: (track.artist.lower() == "mitski" and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["happy", "dan the dancer", "once more to see you", "fireworks", "your best american girl", "i bet on losing dogs", "my body's made of crushed little stars", "thursday girl", "a loving feeling", "crack baby", "a burning hill"]]))
     },
@@ -84,7 +90,8 @@ STYLES = {
     "retire from sad": {
         "background-image": "images/retirefromsad.png",
         
-        "font-family": "Nimbus Sans", #should be Nimbus Sans Round tho... i don't have that font
+        # "font-family": "Nimbus Sans", #should be Nimbus Sans Round tho... i don't have that font
+        "font-family": "fonts/NimbusSans-Bold.otf",
         "font-weight": "black",
         "font-color": "#ffffff",
         
@@ -97,7 +104,8 @@ STYLES = {
     "lush": {
         "background-image": "images/lush.png",
         
-        "font-family": "Avenir LT Std 35 Light",
+        # "font-family": "Avenir LT Std 35 Light",
+        "font-family": "fonts/AvenirLTStd-Light.otf",
         "font-color": "#ffffff",
         "font-weight": "light",
         "line-width": 0,

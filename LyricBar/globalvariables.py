@@ -105,11 +105,11 @@ if "Playing Info" in config:
     if "Spicetify Port" in config["Playing Info"] and str(config["Playing Info"]["Spicetify Port"]).isdigit():
         SPICETIFY_PORT = int(config["Playing Info"]["Spicetify Port"])
 
-if "Theme" in config:
-    if "Folder" in config["Theme"]:
-        THEME_FOLDER = config["Theme"]["Folder"]
-    if "Default" in config["Theme"]:
-        DEFAULT_THEME = config["Theme"]["Default"]
+if "Themes" in config:
+    if "Folder" in config["Themes"]:
+        THEME_FOLDER = config["Themes"]["Folder"]
+    if "Default" in config["Themes"]:
+        DEFAULT_THEME = config["Themes"]["Default"]
 
 if "Proxy" in config:
     if "Host" in config["Proxy"] and config["Proxy"]["Host"] != "" and config["Proxy"]["Host"] is not None and "Port" in config["Proxy"] and str(config["Proxy"]["Port"]).isdigit():
