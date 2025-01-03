@@ -1,0 +1,6 @@
+[submodule "LyricBar/PyQt-Frameless-Window"]
+	path = LyricBar/PyQt-Frameless-Window
+	url = https://github.com/zhiyiYo/PyQt-Frameless-Window
+[submodule "LyricBar/qframlesswindow"]
+	path = LyricBar/qframlesswindow
+	url = https://github.com/zhiyiYo/PyQt-Frameless-Window
