@@ -8,27 +8,6 @@ from ..globalvariables import STT_MODEL_PATH, STT_TRACKING_INPUT
 from ..backend.lyricmanager import LyricLine
 from datetime import datetime
 
-# # model = Model(r"C:\Users\silvora\Desktop\Taskbar_Lyrics\PythonLyrics\speech_recognition\vosk-model-en-us-0.22-lgraph")
-# model = Model(r"C:\Users\silvora\Desktop\Taskbar_Lyrics\PythonLyrics\speech_recognition\vosk-model-small-en-us-0.15")
-# recognizer = KaldiRecognizer(model, 16000)
-
-
-
-# # device_index = int(input('Device index: '))
-
-
-# stream = mic.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8192, input_device_index=device_index)
-# stream.start_stream()
-
-# while True:
-#     data = stream.read(4096, exception_on_overflow=False)
-    
-#     print(f"' {recognizer.PartialResult()[17:-3]} '")
-
-#     if recognizer.AcceptWaveform(data):
-#         text = recognizer.Result()
-#         print(f"' {text[14:-3]} '")
-
 
 class STTThread(QThread):
     def __init__(self, model, recognizer, stream):
