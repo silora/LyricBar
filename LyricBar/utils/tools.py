@@ -19,8 +19,9 @@ def ms_to_mm_ss(ms):
 
 
 def check_if_windows_locked():
-    process_name='LogonUI.exe'
-    callall='TASKLIST'
-    outputall=subprocess.check_output(callall)
-    outputstringall=str(outputall)
-    return process_name in outputstringall
+    # process_name='LogonUI.exe'
+    # callall='TASKLIST'
+    # outputall=subprocess.check_output(callall)
+    # outputstringall=str(outputall)
+    # return process_name in outputstringall
+    return False

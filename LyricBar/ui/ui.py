@@ -58,10 +58,8 @@ class LyricsDisplay(QWidget):
         
         self.frame = QFrame(self)
         
-        # self.faux_taskbar = FauxTaskbar(self.frame, geometry_reference=self)
         self.faux_taskbar = QLabel(self.frame)
         self.faux_taskbar.setStyleSheet("background-color: rgba(0, 0, 0, 0.01);")
-        self.windowsEffect = WindowsWindowEffect(self)
         self.label = LyricLabel(None, parent=self.frame)
         self.toaster = ToastTag(parent=self)
         self.toaster.setHidden(True)
@@ -119,6 +117,8 @@ class LyricsDisplay(QWidget):
         self.now_playing.start_loop()
         self.toast("Welcome to LyricBar", 3000)
         
+        # self.applyBackgroundEffect()
+        
     @property
     def line_provider(self):
         if self.line_mode == 0:
@@ -130,7 +130,7 @@ class LyricsDisplay(QWidget):
         return not ((self.geometry().top() <= QCursor.pos().y() <= self.geometry().bottom()) or check_if_windows_locked() or self.app.screens() == [])
     
     def switch_mode(self):
-        print("SWITCHING MODE")
+        logging.info("SWITCHING MODE")
         if self.line_mode == 0:
             self.line_mode = 1
             self.toast("Switching to STT Mode")
@@ -154,14 +154,14 @@ class LyricsDisplay(QWidget):
         if self.line_mode == 1:
             self.switch_mode()
     
-    def applyBackgroundEffect(self):
-        self.windowsEffect.setAeroEffect(self.winId())
-        # print(getSystemAccentColor().name())
-        # self.windowsEffect.setAcrylicEffect(self.winId(), gradientColor="271b43ff", enableShadow=False, animationId=0)
-        # self.windowsEffect.enableBlurBehindWindow(self.winId())
+    # def applyBackgroundEffect(self):
+    #     self.windowsEffect.setAeroEffect(self.winId())
+    #     # logging.info(getSystemAccentColor().name())
+    #     # self.windowsEffect.setAcrylicEffect(self.winId(), gradientColor="271b43ff", enableShadow=False, animationId=0)
+    #     # self.windowsEffect.enableBlurBehindWindow(self.winId())
     
-    def clearBackgroundEffect(self):
-        self.windowsEffect.removeBackgroundEffect(self.winId())
+    # def clearBackgroundEffect(self):
+    #     self.windowsEffect.removeBackgroundEffect(self.winId())
         
     def switchDesktop(self, next=True):
         screen_count = len(self.app.screens())
@@ -212,9 +212,8 @@ class LyricsDisplay(QWidget):
     def windowConfig(self):
         # pass
         self.setAcceptDrops(False)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.X11BypassWindowManagerHint | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) # | Qt.WindowTransparentForInput)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) # | Qt.WindowTransparentForInput)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        # ApplyMica(self.winId(), MicaTheme.DARK, MicaStyle.DEFAULT)
         
     
     def updateStyle(self, style, force_reload=False):
@@ -234,15 +233,15 @@ class LyricsDisplay(QWidget):
     def maintainer_callback(self, value):
         if value == PlayingStatusTrigger.PAUSE:
             self.paused = True
-            print("!!PAUSING", self.now_playing.current_track)
+            logging.info("!!PAUSING", self.now_playing.current_track)
             self.hide_later_signal.emit()
         elif value == PlayingStatusTrigger.RESUME:
             self.paused = False
-            print("!!RESUMING", self.now_playing.current_track)
+            logging.info("!!RESUMING", self.now_playing.current_track)
             self.setHidden(False)
         elif value == PlayingStatusTrigger.NEW_TRACK:
             self.paused = False
-            print("!!NEW TRACK", self.now_playing.current_track)
+            logging.info("!!NEW TRACK", self.now_playing.current_track)
             if self.now_playing.current_track.is_music:
                 self.set_lyrics_mode()
             else:
@@ -281,7 +280,7 @@ class LyricsDisplay(QWidget):
                     formatted = self.formatter("♬")
                 else:
                     formatted = self.formatter("👂") if line.text == self.formatter("") else self.formatter(line.text)
-            # print("UPDATING LYRICS", formatted)
+            # logging.info("UPDATING LYRICS", formatted)
             self.label.setText(formatted, anim and self.line_mode == 0, duration=line.end_timestamp-line.timestamp if (line.end_timestamp is not None and line.end_timestamp != -1) else None, start_time=begin_time)
             self.displaying_line = line
             self.displaying_line.text = formatted
@@ -310,23 +309,18 @@ class LyricsDisplay(QWidget):
             self.cancel_hide_signal.emit()
         self.bar_hidden = hidden
         if hidden:
-            self.faux_taskbar.setHidden(True)
-            self.label.setHidden(True)
             self.reappear_timer.start(100)
-            self.clearBackgroundEffect()
+            super().setHidden(True)
         else:
             if not self.allowed_to_reappear:
                 self.reappear_timer.start(100)
                 return
-            self.applyBackgroundEffect()
-            self.label.setHidden(False)
-            self.faux_taskbar.setHidden(False)
+            super().setHidden(False)
         
     def reappear(self):
         if self.paused:
             return
-        self.setHidden(False)
-        
+        self.setHidden(False)  
         
     def enterEvent(self, e):
         if self.bar_hidden:
@@ -335,15 +329,6 @@ class LyricsDisplay(QWidget):
             return
         self.bar_hidden = True   
         self.setHidden(True)
-        
-    # def checkMousePosition(self):
-    #     if (self.geometry().top() <= QCursor.pos().y() <= self.geometry().bottom()):
-    #         self.enterEvent(None)
-    
-    # def eventFilter(self, obj, event):
-    #     if not self.bar_hidden and event.type() == QEvent.MouseButtonPress:
-    #         self.mousePressEvent(event)
-    #     return super().eventFilter(obj, event)
     
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton:
@@ -393,10 +378,12 @@ class SystemTrayIcon(QSystemTrayIcon):
         QCoreApplication.exit()
 
 def main():
-    logging.basicConfig(level=logging.INFO)
     app = QApplication(sys.argv)
-    print("physical", app.primaryScreen().physicalDotsPerInch())
+    logging.info("physical", app.primaryScreen().physicalDotsPerInch())
     ui = LyricsDisplay(app)
+    we = WindowsWindowEffect(ui)
+    ptr = int(ui.winId())
+    we.setAeroEffect(ptr)
     trayIcon = SystemTrayIcon(QIcon("resources/icon.ico"), parent=ui)
     trayIcon.show()
     sys.exit(app.exec())
