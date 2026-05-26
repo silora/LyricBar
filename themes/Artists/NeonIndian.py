@@ -1,23 +1,31 @@
-STYLES = {
+﻿STYLES = {
     "neonindian": {
-        "background-color": "#00000000",
+        "background": {
+            "color": "#00000000",
         
-        # "font-color": "qlineargradient(spread:pad, x1:0.3, y1:1, x2:0.7, y2:0, stop:0 #e0eef5, stop:1 #86a4cd)",
-        "font-color": "#e0eef5aa",
-        "font-family": "fonts/Bayshore.otf",
-        "font-size": "50px",
-        "font-weight": "bold",
-        "font-italic": False,
+        },
+        "font": {
+            # "color": "qlineargradient(spread:pad, x1:0.3, y1:1, x2:0.7, y2:0, stop:0 #e0eef5, stop:1 #86a4cd)",
+            "color": "#e0eef5aa",
+            "family": "fonts/Bayshore.otf",
+            "size": "50px",
+            "weight": "bold",
+            "italic": False,
         
         
-        "line-color": "#e0eef5aa",
-        "line-width": 0.5,
+        },
+        "line": {
+            "color": "#e0eef5aa",
+            "width": 0.5,
 
-        "use-shadow": True,
-        "shadow-color": "#0e98de",
-        "shadow-offset": [0, 0],
-        "shadow-radius": 20,
+        },
+        "shadow": {
+            "enabled": True,
+            "color": "#0e98de",
+            "offset": [0, 0],
+            "radius": 20,
         
-        "rule": lambda track: (track.artist.lower() == "neon indian")
+        },
+        "match": {"artist": "neon indian"}
     }
 }

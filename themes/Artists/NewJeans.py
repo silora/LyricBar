@@ -1,17 +1,25 @@
-STYLES = {
+﻿STYLES = {
     "newjeans": {
-        "background-image": "images/newjeans.png",
+        "background": {
+            "image": "images/newjeans.png",
         
-        # "font-family": "Binggrae",
-        "font-family": "fonts/Binggrae-Bold.ttf",
-        "font-size": "35px",
-        "font-color": "#b6d6ed",
+        },
+        "font": {
+            # "family": "Binggrae",
+            "family": "fonts/Binggrae-Bold.ttf",
+            "size": "35px",
+            "color": "#b6d6ed",
         
-        "line-color": "#364551",
-        "line-width": 3,
+        },
+        "line": {
+            "color": "#364551",
+            "width": 3,
         
-        "use-shadow": False,
+        },
+        "shadow": {
+            "enabled": False,
         
-        "rule": lambda track: (track.artist.lower() == "newjeans")
+        },
+        "match": {"artist": "newjeans"}
     }
 }

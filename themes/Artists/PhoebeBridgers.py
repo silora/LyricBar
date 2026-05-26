@@ -1,12 +1,18 @@
-STYLES = {
+﻿STYLES = {
     "phoebe bridgers": {
-        "background-image": "images/phoebebridgers.png",
-        # "font-family": "Garamond",
-        "font-family": "fonts/Garamond.ttf",
-        "font-size": "35px",
+        "background": {
+            "image": "images/phoebebridgers.png",
+        },
+        "font": {
+            # "family": "Garamond",
+            "family": "fonts/Garamond.ttf",
+            "size": "35px",
         
-        "progress-line-color": "#00000000",
+        },
+        "progress": {
+            "line_color": "#00000000",
         
-        "rule": lambda track: (track.artist.lower() == "phoebe bridgers")
+        },
+        "match": {"artist": "phoebe bridgers"}
     }
 }

@@ -78,7 +78,7 @@ class NowPlaying(QObject):
     
     @global_offset.setter
     def global_offset(self, value):
-        print("GLOBAL OFFSET UPDATED: ", value)
+        logging.info("GLOBAL OFFSET UPDATED: ", value)
         self._global_offset = value
             
     @property

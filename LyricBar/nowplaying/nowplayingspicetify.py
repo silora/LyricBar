@@ -85,11 +85,11 @@ if __name__ == "__main__":
     
     def callback(trigger):
         if trigger == PlayingStatusTrigger.PAUSE:
-            print("PAUSE")
+            logging.info("PAUSE")
         elif trigger == PlayingStatusTrigger.RESUME:
-            print("RESUME")
+            logging.info("RESUME")
         elif trigger == PlayingStatusTrigger.NEW_TRACK:
-            print("NEW TRACK")
+            logging.info("NEW TRACK")
     
     app = QApplication(sys.argv)
     np = NowPlayingSpicetify(update_callback=callback, offset=500)

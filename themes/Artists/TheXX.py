@@ -1,11 +1,101 @@
-STYLES = {
+﻿STYLES = {
     "i see you": {
-        "font-image": "images/iseeyou.png",
-        "font-weight": "bold",
-        
-        "line-color": "#adadad",
-        "line-width": 0,
-        
-        "rule": lambda track: (track.artist.lower() in ["the xx"])
-    }
+        "background": {"image": "images/iseeyou.png"},
+        "font": {
+            # "image": "images/iseeyou_text.png",
+            "color": "#898989",
+            "family": "fonts/Futura.ttf",
+            "weight": "bold",
+        },
+        "line": {
+            "color": "#313131",
+            "width": 0,
+        },
+        "progress": {"image": "images/iseeyou_progress.png"},
+        "shadow": {"color": "#212121", "radius": 3, "offset": [1, 1]},
+        "match": {
+            "artist": ["the xx"],
+            "title_any": [
+                "dangerous",
+                "say something loving",
+                "lips",
+                "a violent noise",
+                "performance",
+                "replica",
+                "brave for you",
+                "on hold",
+                "i dare you",
+                "test me",
+            ],
+        },
+        "format": lambda line: line.upper(),
+    },
+    "coexist": {
+        "background": {"image": "images/coexist.png"},
+        "font": {
+            # "image": "images/iseeyou_text.png",
+            "color": "#D2D2D2",
+            "family": "fonts/Futura.ttf",
+            "weight": "bold",
+        },
+        "line": {
+            "color": "#D7D7D7",
+            "width": 0,
+        },
+        "progress": {"image": "images/iseeyou_progress.png"},
+        "shadow": {"color": "#212121", "radius": 3, "offset": [1, 1]},
+        "match": {
+            "artist": ["the xx"],
+            "title_any": [
+                "angels",
+                "chained",
+                "fiction",
+                "try",
+                "reunion",
+                "sunset",
+                "missing",
+                "tides",
+                "unfold",
+                "swept away",
+                "our song",
+            ],
+        },
+        "format": lambda line: line.upper(),
+    },
+    "xx": {
+        "font": {
+            # "image": "images/iseeyou_text.png",
+            "color": "#ffffff",
+            "family": "fonts/Futura.ttf",
+            "weight": "bold",
+        },
+        "line": {
+            "color": "#ffffff",
+            "width": 0,
+        },
+        "progress": {"image": "images/iseeyou_progress.png"},
+        "shadow": {"color": "#212121", "radius": 3, "offset": [1, 1]},
+        "match": {
+            "artist": ["the xx"],
+            "title_any": [
+                "intro",
+                "vcr",
+                "crystalised",
+                "islands",
+                "heart skipped a beat",
+                "fantasy",
+                "shelter",
+                "basic space",
+                "infinity",
+                "night time",
+                "stars",
+                "teardrops",
+                "do you mind?",
+                "hot like fire",
+                "blodd red moon",
+                "insects",
+            ],
+        },
+        "format": lambda line: line.upper(),
+    },
 }

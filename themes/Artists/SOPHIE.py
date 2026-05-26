@@ -1,20 +1,28 @@
-STYLES = {
+﻿STYLES = {
     "sophie": {
-        "background-image": "images/sophie.png",
+        "background": {
+            "image": "images/sophie.png",
         
-        "font-color": "#ffffffbb",
-        # "font-family": "Jean",
-        "font-family": "fonts/Jean.otf",
-        "font-size": "40px",
-        "font-weight": "bold",
+        },
+        "font": {
+            "color": "#ffffffbb",
+            # "family": "Jean",
+            "family": "fonts/Jean.otf",
+            "size": "40px",
+            "weight": "bold",
         
-        "line-width": 1,
-        "line-color": "#ffffffaa",
+        },
+        "line": {
+            "width": 1,
+            "color": "#ffffffaa",
         
-        "shadow-color": "#ffffff66",
-        "shadow-radius": 5,
-        "shadow-offset": [-3, -3],
+        },
+        "shadow": {
+            "color": "#ffffff66",
+            "radius": 5,
+            "offset": [-3, -3],
         
-        "rule": lambda track: (track.artist.lower() == "sophie")
+        },
+        "match": {"artist": "sophie"}
     }
 }

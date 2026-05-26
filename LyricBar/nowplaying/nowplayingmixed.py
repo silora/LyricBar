@@ -60,7 +60,7 @@ class NowPlayingMixed(NowPlaying):
             self.sync_mutex.unlock()
             return
         if self.track_check(self.playing_info, info):
-            print("NEW TRACK: ", info.current_track)
+            logging.info("NEW TRACK: ", info.current_track)
             self.playing_info = info
             self.synced_with_spotify = False
         if not self.synced_with_spotify:
@@ -78,7 +78,7 @@ class NowPlayingMixed(NowPlaying):
                 return
             self.playing_info.current_track_id = onlineinfo.current_track_id
             self.synced_with_spotify = True
-            print("NEW TRACK: ", info.current_track)
+            logging.info("NEW TRACK: ", info.current_track)
             if self.update_callback is not None:
                 self.update_callback(self.playing_info)
         elif self.system.update_check(self.playing_info, info):

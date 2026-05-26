@@ -1,19 +1,27 @@
-STYLES = {
+﻿STYLES = {
     "adrianne lenker": {
-        "background-image": "images/adriannelenker.png",
+        "background": {
+            "image": "images/adriannelenker.png",
         
-        "font-image": "images/adriannelenkertext.png",
-        # "font-color": "#00000000",
-        "font-weight": "bold",
+        },
+        "font": {
+            "image": "images/adriannelenkertext.png",
+            # "color": "#00000000",
+            "weight": "bold",
         
-        "line-width": 0,
-        "line-color": "#ffffff88",
+        },
+        "line": {
+            "width": 0,
+            "color": "#ffffff88",
         
-        "use-shadow": False,
-        "shadow-color": "#000000",
-        "shadow-radius": 10,
-        "shadow-offset": [0, 3],
+        },
+        "shadow": {
+            "enabled": False,
+            "color": "#000000",
+            "radius": 10,
+            "offset": [0, 3],
         
-        "rule": lambda track: (track.artist.lower() == "adrianne lenker")
+        },
+        "match": {"artist": "adrianne lenker"}
     }
 }

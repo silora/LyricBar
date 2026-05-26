@@ -39,7 +39,7 @@ from .outlinedlabel import get_path_lock
 #             right_colors[i] = img.getpixel((-1, i))
         
 #         # elapsed = timeit.default_timer() - start_time
-#         # print(f"Time taken to grab colors: {elapsed} seconds")
+#         # logging.info(f"Time taken to grab colors: {elapsed} seconds")
         
 #         return left_colors, right_colors
 

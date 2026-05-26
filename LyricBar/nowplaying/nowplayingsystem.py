@@ -31,7 +31,7 @@ class NowPlayingSystem(NowPlaying):
         if new_playing_info.current_track != old_playing_info.current_track:
             return True
         if new_playing_info.last_updated_time != old_playing_info.last_updated_time: 
-            # print("Time Gap: %.9f"%(new_playing_info.last_updated_time - old_playing_info.last_updated_time))
+            # logging.info("Time Gap: %.9f"%(new_playing_info.last_updated_time - old_playing_info.last_updated_time))
             return True
         return False
     
@@ -110,7 +110,7 @@ class NowPlayingSystem(NowPlaying):
         logging.debug("GETTING APP ID")
         sessions = self.manager.get_sessions()
         sessions = [session.source_app_user_model_id for session in sessions]
-        # print(sessions)
+        # logging.info(sessions)
         if not any([self.tracking_app in _ for _ in sessions]):
             return None
         amuids = subprocess.check_output(
@@ -130,7 +130,7 @@ class NowPlayingSystem(NowPlaying):
         if self.app_id is None:
             logging.debug("SPOTIFY DOWN")
             self.app_id = await self.get_app_id()
-        # print("GETTING NOW PLAYING INFO")
+        # logging.info("GETTING NOW PLAYING INFO")
         if self.session is None:  
             sessions = self.manager.get_sessions()
             self.session = next(
@@ -171,9 +171,9 @@ class NowPlayingSystem(NowPlaying):
                         if not song_attr.startswith("_")
                     }
                 )
-            # print(info_dict)
+            # logging.info(info_dict)
             # if self.playing_info and self.playing_info.current_begin_time is not None:
-            #     print("Progress: ", datetime.now() - datetime.fromtimestamp(self.playing_info.current_begin_time))
+            #     logging.info("Progress: ", datetime.now() - datetime.fromtimestamp(self.playing_info.current_begin_time))
             if "playback_status" not in info_dict:
                 return None
             return PlayingInfo(
@@ -206,11 +206,11 @@ if __name__ == "__main__":
     
     def callback(trigger):
         if trigger == PlayingStatusTrigger.PAUSE:
-            print("PAUSE")
+            logging.info("PAUSE")
         elif trigger == PlayingStatusTrigger.RESUME:
-            print("RESUME")
+            logging.info("RESUME")
         elif trigger == PlayingStatusTrigger.NEW_TRACK:
-            print("NEW TRACK")
+            logging.info("NEW TRACK")
     
     app = QApplication(sys.argv)
     np = NowPlayingSystem(update_callback=callback, offset=100)

@@ -1,6 +1,11 @@
+import os
+
+import yaml
+
 ##### APPEARANCE
 TAKSBAR_HEIGHT = 70
 LEFTOUT_WIDTH = 500
+SHOW_PROGRESS_BAR = True
 
 ##### OFFSET
 GLOBAL_OFFSET = 0
@@ -31,7 +36,13 @@ SP_DC = ""
 ### Third party lyrics providers
 ### AVAILABLE PROVIDERS (from syncedlyrics): Musixmatch, Lrclib, Deezer, NetEase, Megalobiz, Genius
 ### Netease DOES NOT PROVIDE BJORK SONGS!!!!!
-THIRD_PARTY_LYRICS_PROVIDERS = ["Lrclib", "NetEase", "Musixmatch", "Deezer", "Megalobiz"]
+THIRD_PARTY_LYRICS_PROVIDERS = [
+    "Lrclib",
+    "NetEase",
+    "Musixmatch",
+    "Deezer",
+    "Megalobiz",
+]
 
 ### DOES NOT conflict with each other, but spotify lyrics are prioritized, then third party lyrics providers in the list order
 
@@ -65,31 +76,51 @@ TRACKING_APP = "Spotify.exe"
 
 SPICETIFY_PORT = 8974
 
-
-import yaml
-import os
-
 config = dict()
 if os.path.exists("settings.yaml"):
     config = yaml.safe_load(open("settings.yaml", "r"))
 
-if "Apperance" in config:
-    if "Taksbar Height" in config["Apperance"] and str(config["Apperance"]["Taksbar Height"]).isdigit():
-        TAKSBAR_HEIGHT = int(config["Apperance"]["TaksbarHeight"])
-    if "Leftout Width" in config["Apperance"] and str(config["Apperance"]["Leftout Width"]).isdigit():
-        LEFTOUT_WIDTH = int(config["Apperance"]["Leftout Width"])
+if "Appearance" in config:
+    if (
+        "Taksbar Height" in config["Appearance"]
+        and str(config["Appearance"]["Taksbar Height"]).isdigit()
+    ):
+        TAKSBAR_HEIGHT = int(config["Appearance"]["Taskbar Height"])
+    if (
+        "Leftout Width" in config["Appearance"]
+        and str(config["Appearance"]["Leftout Width"]).isdigit()
+    ):
+        LEFTOUT_WIDTH = int(config["Appearance"]["Leftout Width"])
+    if "Show Progress Bar" in config["Appearance"]:
+        value = config["Appearance"]["Show Progress Bar"]
+        if isinstance(value, bool):
+            SHOW_PROGRESS_BAR = value
+        elif isinstance(value, str):
+            SHOW_PROGRESS_BAR = value.strip().lower() in ["true", "1", "yes", "y", "on"]
+        elif isinstance(value, (int, float)):
+            SHOW_PROGRESS_BAR = value != 0
 
 if "Lyrics" in config:
     if "Folder" in config["Lyrics"]:
         LYRIC_FOLDER = config["Lyrics"]["Folder"]
-    if "Global Offset" in config["Lyrics"] and str(config["Lyrics"]["Global Offset"]).isdigit():
+    if (
+        "Global Offset" in config["Lyrics"]
+        and str(config["Lyrics"]["Global Offset"]).isdigit()
+    ):
         GLOBAL_OFFSET = int(config["Lyrics"]["Global Offset"])
     if "Providers" in config["Lyrics"]:
-        if "Spotify" in config["Lyrics"]["Providers"] and config["Lyrics"]["Providers"]["Spotify"]:
+        if (
+            "Spotify" in config["Lyrics"]["Providers"]
+            and config["Lyrics"]["Providers"]["Spotify"]
+        ):
             USE_SPOTIFY_LYRICS = True
             if "SP_DC" in config["Lyrics"]["Providers"]["Spotify"]:
                 SP_DC = config["Lyrics"]["Providers"]["Spotify"]["DC"]
-        THIRD_PARTY_LYRICS_PROVIDERS = filter(lambda x: x.lower() in ["musixmatch", "lrclib", "deezer", "netease", "megalobiz"], config["Lyrics"]["Providers"])
+        THIRD_PARTY_LYRICS_PROVIDERS = filter(
+            lambda x: x.lower()
+            in ["musixmatch", "lrclib", "deezer", "netease", "megalobiz"],
+            config["Lyrics"]["Providers"],
+        )
 
 if "STT" in config:
     if "Model Path" in config["STT"]:
@@ -102,7 +133,10 @@ if "Playing Info" in config:
         PLAYING_INFO_PROVIDER = config["Playing Info"]["Provider"]
     if "Tracking App" in config["Playing Info"]:
         TRACKING_APP = config["Playing Info"]["Tracking App"]
-    if "Spicetify Port" in config["Playing Info"] and str(config["Playing Info"]["Spicetify Port"]).isdigit():
+    if (
+        "Spicetify Port" in config["Playing Info"]
+        and str(config["Playing Info"]["Spicetify Port"]).isdigit()
+    ):
         SPICETIFY_PORT = int(config["Playing Info"]["Spicetify Port"])
 
 if "Themes" in config:
@@ -112,6 +146,12 @@ if "Themes" in config:
         DEFAULT_THEME = config["Themes"]["Default"]
 
 if "Proxy" in config:
-    if "Host" in config["Proxy"] and config["Proxy"]["Host"] != "" and config["Proxy"]["Host"] is not None and "Port" in config["Proxy"] and str(config["Proxy"]["Port"]).isdigit():
+    if (
+        "Host" in config["Proxy"]
+        and config["Proxy"]["Host"] != ""
+        and config["Proxy"]["Host"] is not None
+        and "Port" in config["Proxy"]
+        and str(config["Proxy"]["Port"]).isdigit()
+    ):
         HTTP_PROXY = config["Proxy"]["Host"] + ":" + str(config["Proxy"]["Port"])
         HTTPS_PROXY = config["Proxy"]["Host"] + ":" + str(config["Proxy"]["Port"])

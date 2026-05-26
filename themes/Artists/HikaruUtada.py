@@ -1,17 +1,21 @@
 STYLES = {
     "hikaru utada": {
-        "font-image": "images/hikaruutada.png",
-        
-        "font-weight": "bold",
-        
-        "line-color": "#d4dfef",
-        "line-width": 0,
-        
-        "use-shadow": False,
-        "shadow-color": "#d4dfef",
-        "shadow-radius": 5,
-        "shadow-offset": [2, 2],
-        
-        "rule": lambda track: (track.artist.lower() in ["宇多田ヒカル", "hikaru utada", "宇多田光", "utada"])
+        "font": {
+            "image": "images/hikaruutada.png",
+            "weight": "bold",
+        },
+        "line": {
+            "color": "#d4dfef",
+            "width": 0,
+        },
+        "shadow": {
+            "enabled": False,
+            "color": "#d4dfef",
+            "radius": 5,
+            "offset": [2, 2],
+        },
+        "match": {
+            "artist": ["宇多田光", "hikaru utada", "宇多田ヒカル", "utada"],
+        },
     }
 }

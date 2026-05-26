@@ -2,7 +2,7 @@
 
 <div align="center">
   
-# <img src="readme_resources/icon.ico" alt="Icon" width="40" height="40"> LyricBar
+# <img src="readme_resources/title.png" alt="Icon">
 
 *<p style="color:grey">Taskbar Lyrics For Spotify and More</p>*
 
@@ -104,20 +104,23 @@
     - Background:
         - Background Color
         - Background Image
+    - Foreground:
+        - Foreground Color
+        - Foreground Image
     - Animation:
         - Entering
         - Sustaining
         - Leaving
     - Progress Bar:
         - Outline Color
-        - Filling Color
+        - Filling Color/Image
     - Line Formatter
 
 ----
 
 ## 🎨 Gallery
 
-| Default |
+<!-- | Default |
 |:-------:|
 | ![Default](readme_resources/gifs/janeremover_magiciwantu.gif) |
 | **Provided Presets** |
@@ -133,14 +136,19 @@
 | ![](readme_resources/gifs/sufjanstevens_casmirpulaskiday.gif) |
 | ![](readme_resources/gifs/troyesivan_howwtostaywithyou.gif) |
 | ![](readme_resources/gifs/tylerthecreator_sticky.gif) |
-| *and more...*|
+| *and more...*| -->
+
+![](readme_resources/random.gif)
 
 - *Font not provided*
 
 ----
 
 ## ♻️ Updates
-
+- 20260526 v0.4.0 [ss26 update]
+    - Foreground style bug fix
+    - Theme setting optimization
+    - More themes!
 - 20250102 v0.3.0
     - Fixed STT mode
     - Replace faux taskbar with aero effect
@@ -183,6 +191,9 @@
 
 ## 💼 Todo
 
+- [ ] Better App Icon!!!!! (running out of ideas now...)
+- [ ] More lyric sources
+- [ ] support translation lyrics
 - [ ] Code clean up......
 - [ ] Peek lines without changing offset
 - [x] Hide when hovered

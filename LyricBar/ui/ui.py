@@ -1,42 +1,33 @@
 import logging
 import sys
-from PyQt5.QtCore import QPropertyAnimation, Qt, QTimer, QCoreApplication, pyqtSignal, QMutex, QEvent
-from PyQt5.QtGui import QColor, QCursor, QKeyEvent, QPixmap, QBrush, QPen, QGuiApplication, QIcon, QFont
+
+from PyQt5.QtCore import QCoreApplication, QMutex, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import (
     QApplication,
     QFrame,
-    QGraphicsDropShadowEffect,
     QLabel,
-    QWidget,
     QMenu,
-    QSystemTrayIcon
+    QSystemTrayIcon,
+    QWidget,
 )
-
-
 from qframelesswindow.windows.window_effect import WindowsWindowEffect
-from qframelesswindow.utils.win32_utils import getSystemAccentColor
 
-from ..themes import get_style, load_themes
-from .components.lyriclabel import LyricLabel
-
-from .components.toasttag import ToastTag
-
-from .components.progressbar import ProgressBar
-
-from .components.pad import Pad
-from .components.utils import convert_to_color
-
-from ..globalvariables import PLAYING_INFO_PROVIDER, TAKSBAR_HEIGHT, LEFTOUT_WIDTH, SPICETIFY_PORT
-from .components.outlinedlabel import OutlinedLabel
-from ..backend.lyricsmaintainer import LyricsMaintainer
+from ..backend.lyricsmaintainer import DummyLyricsMaintainer, LyricsMaintainer
 from ..backend.sttmaintainer import STTMaintainer
+from ..globalvariables import (
+    LEFTOUT_WIDTH,
+    PLAYING_INFO_PROVIDER,
+    SHOW_PROGRESS_BAR,
+    SPICETIFY_PORT,
+    TAKSBAR_HEIGHT,
+)
 from ..nowplaying import NowPlayingSpicetify, NowPlayingSystem
-
-
-from .components.fauxtaskbar import FauxTaskbar
+from ..themes import get_style, load_themes
 from ..utils.dataclasses import PlayingStatusTrigger
-
 from ..utils.tools import check_if_windows_locked
+from .components.lyriclabel import LyricLabel
+from .components.toasttag import ToastTag
 
 
 class LyricsDisplay(QWidget):
@@ -44,91 +35,125 @@ class LyricsDisplay(QWidget):
     hide_later_signal = pyqtSignal()
     cancel_hide_signal = pyqtSignal()
     callback_signal = pyqtSignal(object)
-    def __init__(self, app): #, screen_width, screen_height):
+
+    def __init__(
+        self,
+        app,
+        playing_info_provider,
+        taksbar_height,
+        leftout_width,
+        spicetify_port,
+        show_progress_bar=True,
+    ):  # , screen_width, screen_height):
         super().__init__()
         self.app = app
-        
+        self.playing_info_provider = playing_info_provider
+        self.taksbar_height = taksbar_height
+        self.leftout_width = leftout_width
+        self.spicetify_port = spicetify_port
+        self.show_progress_bar = show_progress_bar
+
         # self.desktop = self.app.screens()
         self.screen_id = 0
         self.app.screenAdded.connect(self.screenAdded)
         self.app.screenRemoved.connect(self.screenRemoved)
 
-        
         self.windowConfig()
-        
+
         self.frame = QFrame(self)
-        
+
         self.faux_taskbar = QLabel(self.frame)
         self.faux_taskbar.setStyleSheet("background-color: rgba(0, 0, 0, 0.01);")
-        self.label = LyricLabel(None, parent=self.frame)
+        self.label = LyricLabel(
+            None, parent=self.frame, progress_enabled=self.show_progress_bar
+        )
         self.toaster = ToastTag(parent=self)
         self.toaster.setHidden(True)
         self.toast_signal.connect(self.toaster.start)
-        
-        
+
         self.setPosition()
         self.show()
         self.setMouseTracking(True)
-        
+
         self.displaying_line = None
         self.displaying_begin_time = None
         self.paused = False
-        
+
         self.bar_hidden = False
         # self.app.installEventFilter(self)
-        
+
         self._drag_active = False
-        
+
         self.style_name = "default"
         self.formatter = lambda x: x
-        
+
         self.reappear_timer = QTimer(self)
         self.reappear_timer.setSingleShot(True)
         self.reappear_timer.timeout.connect(self.reappear)
-        
+
         self.hide_later_timer = QTimer(self)
         self.hide_later_timer.setSingleShot(True)
         self.hide_later_timer.timeout.connect(lambda: self.setHidden(True))
-        
+
         self.hide_later_signal.connect(lambda: self.hide_later_timer.start(1000))
-        self.cancel_hide_signal.connect(lambda: self.hide_later_timer.stop() if self.hide_later_timer.isActive() else None)
-    
+        self.cancel_hide_signal.connect(
+            lambda: (
+                self.hide_later_timer.stop()
+                if self.hide_later_timer.isActive()
+                else None
+            )
+        )
 
         self.callback_signal.connect(self.maintainer_callback)
-        
-        if PLAYING_INFO_PROVIDER == "Spicetify":
-            self.now_playing = NowPlayingSpicetify(socket_port=SPICETIFY_PORT, update_callback=self.callback_signal.emit, offset=120)
+
+        if self.playing_info_provider == "Spicetify":
+            self.now_playing = NowPlayingSpicetify(
+                socket_port=self.spicetify_port,
+                update_callback=self.callback_signal.emit,
+                offset=120,
+            )
         else:
-            self.now_playing = NowPlayingSystem(update_callback=self.callback_signal.emit, sync_interval=25, offset=0)
-        
+            self.now_playing = NowPlayingSystem(
+                update_callback=self.callback_signal.emit, sync_interval=25, offset=0
+            )
+
         self.line_mode = 0
-        self.lyric_maintainer = LyricsMaintainer(self.now_playing, self.callback_signal.emit) 
-        
+
+        if self.playing_info_provider == "dummy":
+            self.lyric_maintainer = DummyLyricsMaintainer()
+        else:
+            self.lyric_maintainer = LyricsMaintainer(
+                self.now_playing, self.callback_signal.emit
+            )
+
         self.sst_maintainer = STTMaintainer(self.now_playing, self.callback_signal.emit)
         self.sst_maintainer.pause()
-        
-        
+
         self.timer = QTimer(self)
         self.update_mutex = QMutex()
         self.style_mutex = QMutex()
         self.timer.timeout.connect(self.update_info)
         self.timer.start(50)
-        
+
         self.now_playing.start_loop()
         self.toast("Welcome to LyricBar", 3000)
-        
+
         # self.applyBackgroundEffect()
-        
+
     @property
     def line_provider(self):
         if self.line_mode == 0:
             return self.lyric_maintainer
         return self.sst_maintainer
-    
+
     @property
     def allowed_to_reappear(self):
-        return not ((self.geometry().top() <= QCursor.pos().y() <= self.geometry().bottom()) or check_if_windows_locked() or self.app.screens() == [])
-    
+        return not (
+            (self.geometry().top() <= QCursor.pos().y() <= self.geometry().bottom())
+            or check_if_windows_locked()
+            or self.app.screens() == []
+        )
+
     def switch_mode(self):
         logging.info("SWITCHING MODE")
         if self.line_mode == 0:
@@ -145,24 +170,24 @@ class LyricsDisplay(QWidget):
             self.label.use_scale = True
             self.lyric_maintainer.start()
             self.sst_maintainer.pause()
-            
+
     def set_stt_mode(self):
         if self.line_mode == 0:
             self.switch_mode()
-            
+
     def set_lyrics_mode(self):
         if self.line_mode == 1:
             self.switch_mode()
-    
+
     # def applyBackgroundEffect(self):
     #     self.windowsEffect.setAeroEffect(self.winId())
     #     # logging.info(getSystemAccentColor().name())
     #     # self.windowsEffect.setAcrylicEffect(self.winId(), gradientColor="271b43ff", enableShadow=False, animationId=0)
     #     # self.windowsEffect.enableBlurBehindWindow(self.winId())
-    
+
     # def clearBackgroundEffect(self):
     #     self.windowsEffect.removeBackgroundEffect(self.winId())
-        
+
     def switchDesktop(self, next=True):
         screen_count = len(self.app.screens())
         if screen_count == 0:
@@ -172,20 +197,20 @@ class LyricsDisplay(QWidget):
         self.screen_id = (self.screen_id + (1 if next else 0)) % screen_count
         self.toast(f"Moving to Screen {self.screen_id}")
         self.setPosition()
-        
+
     def screenAdded(self):
         self.switchDesktop(next=False)
-    
+
     def screenRemoved(self):
         self.switchDesktop(next=False)
-    
+
     def toast(self, text, duration=1000):
         self.toaster.start(text, duration)
-        
+
     def copyLyricsToClipboard(self):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.line_provider.line.text)
-    
+
     def setPosition(self):
         if self.screen_id >= len(self.app.screens()):
             self.switchDesktop(next=False)
@@ -194,28 +219,38 @@ class LyricsDisplay(QWidget):
         screen_width = screen.geometry().width()
         screen_top = screen.geometry().top()
         screen_left = screen.geometry().left()
-        
-        # self.setFixedSize(screen_width - 2 * LEFTOUT_WIDTH, TAKSBAR_HEIGHT - 1)
-        width = screen_width - 2 * LEFTOUT_WIDTH
+
+        # self.setFixedSize(screen_width - 2 * self.leftout_width, self.taksbar_height - 1)
+        width = screen_width - 2 * self.leftout_width
         x = (screen_width - width) // 2
-        y = screen_height - TAKSBAR_HEIGHT
-        
-        
-        self.setGeometry(screen_left + x, screen_top + y, screen_width - 2 * LEFTOUT_WIDTH, TAKSBAR_HEIGHT)
-        
+        y = screen_height - self.taksbar_height
+
+        self.setGeometry(
+            screen_left + x,
+            screen_top + y,
+            screen_width - 2 * self.leftout_width,
+            self.taksbar_height,
+        )
+
         self.faux_taskbar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.faux_taskbar.setGeometry(0, 0, self.width(), self.height())
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setFixedSize(self.width(), self.height())
-        self.toaster.setGeometry(self.width() // 3, 0, (self.height() + 10) * 2, (self.height() + 10))
+        self.toaster.setGeometry(
+            self.width() // 3, 0, (self.height() + 10) * 2, (self.height() + 10)
+        )
 
     def windowConfig(self):
         # pass
         self.setAcceptDrops(False)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) # | Qt.WindowTransparentForInput)
+        self.setWindowFlags(
+            self.windowFlags()
+            | Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Tool
+        )  # | Qt.WindowTransparentForInput)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        
-    
+
     def updateStyle(self, style, force_reload=False):
         if not self.style_mutex.tryLock(5000):
             return
@@ -228,8 +263,8 @@ class LyricsDisplay(QWidget):
         self.displaying_line = None
         # self.label.setText("🔄", False)
         self.style_mutex.unlock()
-        return 
-    
+        return
+
     def maintainer_callback(self, value):
         if value == PlayingStatusTrigger.PAUSE:
             self.paused = True
@@ -251,7 +286,6 @@ class LyricsDisplay(QWidget):
         elif isinstance(value, str):
             self.toast_signal.emit(value, 2000)
 
-
     def updateLyrics(self, anim=True):
         if self.isHidden():
             return
@@ -266,7 +300,9 @@ class LyricsDisplay(QWidget):
             text = line.text
             anim = True
             formatted = self.formatter(text)
-            if (line == self.displaying_line and formatted == self.displaying_line.text) and begin_time == self.displaying_begin_time:
+            if (
+                line == self.displaying_line and text == self.displaying_line.text
+            ) and begin_time == self.displaying_begin_time:
                 return
             if line.timestamp == -2:
                 formatted = self.formatter("♬")
@@ -279,9 +315,22 @@ class LyricsDisplay(QWidget):
                 if self.line_mode == 0:
                     formatted = self.formatter("♬")
                 else:
-                    formatted = self.formatter("👂") if line.text == self.formatter("") else self.formatter(line.text)
+                    formatted = (
+                        self.formatter("👂")
+                        if text == self.formatter("")
+                        else self.formatter(text)
+                    )
             # logging.info("UPDATING LYRICS", formatted)
-            self.label.setText(formatted, anim and self.line_mode == 0, duration=line.end_timestamp-line.timestamp if (line.end_timestamp is not None and line.end_timestamp != -1) else None, start_time=begin_time)
+            self.label.setText(
+                formatted,
+                anim and line.timestamp > 0,
+                duration=(
+                    line.end_timestamp - line.timestamp
+                    if (line.end_timestamp is not None and line.end_timestamp != -1)
+                    else None
+                ),
+                start_time=begin_time,
+            )
             self.displaying_line = line
             self.displaying_line.text = formatted
             self.displaying_begin_time = begin_time
@@ -290,20 +339,20 @@ class LyricsDisplay(QWidget):
         if self.label.text() != "⏸":
             self.label.setText("⏸", False)
         return
-        
+
     def updateProgress(self):
-        if self.bar_hidden:
+        if self.bar_hidden or not self.show_progress_bar:
             return
         self.label.setProgress(self.now_playing.percent)
-    
+
     def updateTaskbar(self):
         pass
-    
+
     def update_info(self):
         self.updateLyrics()
         self.updateProgress()
         # self.checkMousePosition()
-        
+
     def setHidden(self, hidden):
         if not hidden:
             self.cancel_hide_signal.emit()
@@ -316,44 +365,59 @@ class LyricsDisplay(QWidget):
                 self.reappear_timer.start(100)
                 return
             super().setHidden(False)
-        
+
     def reappear(self):
         if self.paused:
             return
-        self.setHidden(False)  
-        
+        self.setHidden(False)
+
     def enterEvent(self, e):
         if self.bar_hidden:
             return
-        if QApplication.queryKeyboardModifiers() & Qt.KeyboardModifier.ControlModifier == Qt.KeyboardModifier.ControlModifier:
+        if (
+            QApplication.queryKeyboardModifiers() & Qt.KeyboardModifier.ControlModifier
+            == Qt.KeyboardModifier.ControlModifier
+        ):
             return
-        self.bar_hidden = True   
+        self.bar_hidden = True
         self.setHidden(True)
-    
+
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton:
-            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier == Qt.KeyboardModifier.ShiftModifier:
+            if (
+                QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier
+                == Qt.KeyboardModifier.ShiftModifier
+            ):
                 self.switchDesktop()
             else:
                 self.copyLyricsToClipboard()
                 self.toast("Lyrics Copied to Clipboard")
         elif e.button() == Qt.MouseButton.RightButton:
-            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier == Qt.KeyboardModifier.ShiftModifier:
+            if (
+                QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier
+                == Qt.KeyboardModifier.ShiftModifier
+            ):
                 self.switch_mode()
             else:
                 self.line_provider.get_from_next_source()
                 self.toast("Searching from Next Source")
         elif e.button() == Qt.MouseButton.MiddleButton:
-            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier == Qt.KeyboardModifier.ShiftModifier:
-                self.line_provider.set_empty_lyrics()        
+            if (
+                QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier
+                == Qt.KeyboardModifier.ShiftModifier
+            ):
+                self.line_provider.set_empty_lyrics()
                 self.toast("Lyrics Cleared")
             else:
                 self.line_provider.track_offset = 0
                 self.toast("Track Offset Reset")
-        
+
     def wheelEvent(self, e):
         QModifiers = QApplication.keyboardModifiers()
-        if QModifiers & Qt.KeyboardModifier.ShiftModifier == Qt.KeyboardModifier.ShiftModifier:
+        if (
+            QModifiers & Qt.KeyboardModifier.ShiftModifier
+            == Qt.KeyboardModifier.ShiftModifier
+        ):
             self.now_playing.global_offset += e.angleDelta().y()
             self.toast("Global Offset:\n" + str(self.now_playing.global_offset))
         else:
@@ -365,25 +429,84 @@ class SystemTrayIcon(QSystemTrayIcon):
 
     def __init__(self, icon, parent=None):
         QSystemTrayIcon.__init__(self, icon, parent)
-        menu = QMenu(parent)
+        self.setToolTip("LyricBar")
+        menu = QMenu()
+        menu.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        menu.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        menu.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
+        menu.setStyleSheet(
+            """
+            QMenu {
+                background-color: #DBA4B6;
+                color: #191213;
+                border: 1px solid #4a4a4a;
+                border-radius: 8px;
+                padding: 6px;
+            }
+            QMenu::item {
+                background-color: transparent;
+                border-radius: 6px;
+                padding: 5px 24px 5px 14px;
+                margin: 1px 0px;
+            }
+            QMenu::item:selected {
+                background-color: #191213;
+                color: #1ED760;
+            }
+            QMenu::separator {
+                height: 1px;
+                background: #474747;
+                margin: 6px 8px;
+            }
+            """
+        )
         exitAction = menu.addAction("Exit")
         swtichDesktopAction = menu.addAction("Switch Desktop")
         reloadThemeAction = menu.addAction("Reload Themes")
         self.setContextMenu(menu)
         exitAction.triggered.connect(self.exit)
-        swtichDesktopAction.triggered.connect(lambda: parent.switch_desktop(True))
-        reloadThemeAction.triggered.connect(lambda: [load_themes(), parent.updateStyle(get_style(parent.now_playing.current_track), force_reload=True), parent.toast("Themes Reloaded")])
+        swtichDesktopAction.triggered.connect(lambda: parent.switchDesktop(True))
+        reloadThemeAction.triggered.connect(
+            lambda: [
+                load_themes(),
+                parent.updateStyle(
+                    get_style(parent.now_playing.current_track), force_reload=True
+                ),
+                parent.toast("Themes Reloaded"),
+            ]
+        )
 
     def exit(self):
         QCoreApplication.exit()
 
-def main():
+
+def main(
+    playing_info_provider=PLAYING_INFO_PROVIDER,
+    taksbar_height=TAKSBAR_HEIGHT,
+    leftout_width=LEFTOUT_WIDTH,
+    spicetify_port=SPICETIFY_PORT,
+    show_progress_bar=SHOW_PROGRESS_BAR,
+):
     app = QApplication(sys.argv)
     logging.info("physical", app.primaryScreen().physicalDotsPerInch())
-    ui = LyricsDisplay(app)
+    ui = LyricsDisplay(
+        app,
+        playing_info_provider=playing_info_provider,
+        taksbar_height=taksbar_height,
+        leftout_width=leftout_width,
+        spicetify_port=spicetify_port,
+        show_progress_bar=show_progress_bar,
+    )
     we = WindowsWindowEffect(ui)
     ptr = int(ui.winId())
     we.setAeroEffect(ptr)
+    import pywinstyles
+
+    pywinstyles.apply_style(ui, "aero")
     trayIcon = SystemTrayIcon(QIcon("resources/icon.ico"), parent=ui)
     trayIcon.show()
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main(playing_info_provider="dummy")

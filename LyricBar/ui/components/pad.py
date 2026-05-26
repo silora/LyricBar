@@ -15,7 +15,7 @@ class Pad(QLabel):
     def paintEvent(self, event):
         painter = QPainter(self)
         if self.brush.gradient() is not None and self.brush.gradient().type() == QGradient.Type.RadialGradient and self.brush.gradient().CoordinateMode == QGradient.CoordinateMode.LogicalMode:
-            print(self.brush.gradient().focalPoint())
+            logging.info(self.brush.gradient().focalPoint())
             center = QPointF(self.brush.gradient().focalPoint())
             center.setX(center.x() * self.width())
             center.setY(center.y() * self.height())

@@ -1,15 +1,21 @@
-STYLES = {
+﻿STYLES = {
     "cupcakke": {
-        "font-color": "#e0ddb4",
-        # "font-family": "Feathergraphy clean",
-        "font-family": "fonts/FeathergraphyClean.ttf",
+        "font": {
+            "color": "#e0ddb4",
+            # "family": "Feathergraphy clean",
+            "family": "fonts/FeathergraphyClean.ttf",
         
-        "font-size": "40px",
+            "size": "40px",
         
-        "line-width": 0,
+        },
+        "line": {
+            "width": 0,
         
-        "use-shadow": False,
+        },
+        "shadow": {
+            "enabled": False,
         
-        "rule": lambda track: (track.artist.lower() == "cupcakke")
+        },
+        "match": {"artist": "cupcakke"}
     }
 }

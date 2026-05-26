@@ -1,21 +1,97 @@
 STYLES = {
     "motomami": {
-        "background-color": "qradialgradient(spread:pad, mode:logical, cx:width/2, cy:height/2, radius:height/2+width/4, fx:width/2, fy:height/2, stop:0 #ffffff, stop:0.45 #ffffff, stop:0.5 #00000000, stop:0.51 #ffffff, stop:0.6 #00000000, stop:0.61 #ffffff, stop:1 #00000000)",
-        
-        "font-color": "#FF0000",
-        # "font-family": "Motomami",
-        "font-family": "fonts/Motomami.ttf",
-        "font-size": "65px",
-        
-        "line-color": "#ffffff",
-        "line-width": 3,
-
-        "shadow-color": "#FF0000",
-        "shadow-offset": [0, 0],
-        "shadow-radius": 30,
-        
-        "format": lambda line: line.replace("motomami", "MoToMaMi").replace("Motomami", "MoToMaMi").replace("MOTOMAMI", "MoToMaMi"),
-        
-        "rule": lambda track: (track.artist.lower() in ["rosalia", "rosalía"] and any([_ in track.title.lower().replace("‘", "'").replace("’", "'") for _ in ["saoko", "candy", "la fama", "bulería", "buleria", "chicken teriyaki", "hentai", "bizcochito", "g3 n15", "motomami", "diablo", "delirio de grandeza", "cuuuuuuuuuute", "como un g", "abcdefg", "la combi versace", "sakura", "thank yu :)", "despechá", "despecha", "aislamiento", "la kilié", "la kilie", "lax", "chiri"]]))
-    }
+        "background": {
+            "color": "qradialgradient(spread:pad, mode:logical, cx:width/2, cy:height/2, radius:height/2+width/4, fx:width/2, fy:height/2, stop:0 #ffffff, stop:0.45 #ffffff, stop:0.5 #00000000, stop:0.51 #ffffff, stop:0.6 #00000000, stop:0.61 #ffffff, stop:1 #00000000)",
+        },
+        "font": {
+            "color": "#FF0000",
+            # "family": "Motomami",
+            "family": "fonts/Motomami.ttf",
+            "size": "65px",
+        },
+        "line": {
+            "color": "#ffffff",
+            "width": 3,
+        },
+        "shadow": {
+            "color": "#FF0000",
+            "offset": [0, 0],
+            "radius": 30,
+        },
+        "format": lambda line: line.replace("motomami", "MoToMaMi")
+        .replace("Motomami", "MoToMaMi")
+        .replace("MOTOMAMI", "MoToMaMi"),
+        "match": {
+            "artist": ["rosalia", "rosalía"],
+            "title_any": [
+                "saoko",
+                "candy",
+                "la fama",
+                "bulería",
+                "buleria",
+                "chicken teriyaki",
+                "hentai",
+                "bizcochito",
+                "g3 n15",
+                "motomami",
+                "diablo",
+                "delirio de grandeza",
+                "cuuuuuuuuuute",
+                "como un g",
+                "abcdefg",
+                "la combi versace",
+                "sakura",
+                "thank yu :)",
+                "despechá",
+                "despecha",
+                "aislamiento",
+                "la kilié",
+                "la kilie",
+                "lax",
+                "chiri",
+            ],
+        },
+    },
+    "lux": {
+        "background": {
+            "image": "images/lux.png",
+        },
+        "font": {
+            "color": "#2b2626",
+            "family": "fonts/TrajanPro.ttf",
+            "size": "30px",
+        },
+        "line": {
+            "color": "#ffffff",
+            "width": 0,
+        },
+        "shadow": {
+            "color": "#7e93a6",
+            "offset": [0, 0],
+            "radius": 30,
+        },
+        "format": lambda line: " ".join(line),
+        "match": {
+            "artist": ["rosalia", "rosalía"],
+            "title_any": [
+                "sexo, violencia y llantas",
+                "reliquia",
+                "divinize",
+                "porcelana",
+                "mio cristo piange diamanti",
+                "berghain",
+                "la perla",
+                "mundo nuevo",
+                "de madrugá",
+                "dios es un stalker",
+                "la yugular",
+                "focu 'ranni",
+                "sauvignon blanc",
+                "jeanne",
+                "novia robot" "la rumba del perdón",
+                "memória",
+                "magnolias",
+            ],
+        },
+    },
 }

@@ -1,13 +1,14 @@
-
 import logging
 import re
 from typing import Optional
-import syncedlyrics
-from syncedlyrics.utils import R_FEAT, generate_bs4_soup
+
 import rapidfuzz
+import syncedlyrics
 from bs4 import SoupStrainer
+from syncedlyrics.utils import R_FEAT, generate_bs4_soup
 
 INSTRUMENTAL_LRC = "[00:00.00]  ♬"
+
 
 def _str_score(a, b):
     a, b = a.lower(), b.lower()
@@ -15,36 +16,45 @@ def _str_score(a, b):
         a, b = R_FEAT.sub("", a), R_FEAT.sub("", b)
     return (rapidfuzz.fuzz.token_set_ratio(a, b), rapidfuzz.fuzz.ratio(a, b))
 
+
 def _str_same(a, b, n):
     score = _str_score(a, b)
     return round(score[0]) >= n
 
+
 syncedlyrics.utils.str_score = _str_score
 syncedlyrics.utils.str_same = _str_same
+
 
 def _sort_results_with_length(
     results,
     search_term,
-    string_key = "name",
-    length_key = "length",
+    string_key="name",
+    length_key="length",
 ):
     if isinstance(string_key, str):
         string_key = lambda t: t[string_key]
     if isinstance(length_key, str):
         length_key = lambda t: t[length_key]
-    sort_key = lambda t: ((length_key(t), *_str_score(string_key(t), search_term)), length_key(t))
+    sort_key = lambda t: (
+        (length_key(t), *_str_score(string_key(t), search_term)),
+        length_key(t),
+    )
     return sorted(results, key=sort_key, reverse=True)
+
 
 def _get_best_match_with_length(
     results,
     search_term,
     string_key,
     length_key,
-    min_score = 60,
+    min_score=60,
 ):
     if not results:
         return None
-    results = _sort_results_with_length(results, search_term, string_key=string_key, length_key=length_key)
+    results = _sort_results_with_length(
+        results, search_term, string_key=string_key, length_key=length_key
+    )
     best_match = results[0]
 
     value_to_compare = (
@@ -52,24 +62,32 @@ def _get_best_match_with_length(
         if isinstance(string_key, str)
         else string_key(best_match)
     )
-    
+
     if not _str_same(value_to_compare, search_term, n=min_score):
         return None
     return best_match
 
 
-from syncedlyrics.providers import Deezer, Lrclib, Musixmatch, NetEase, Megalobiz, Genius
+from syncedlyrics.providers import (
+    Deezer,
+    Genius,
+    Lrclib,
+    Megalobiz,
+    Musixmatch,
+    NetEase,
+)
+
 
 def _get_lrc_musixmatch(self, t):
     search_term = f"{t.title} {t.artist}"
     r = self._get(
-            "track.search",
-            [
-                ("q", search_term),
-                ("page_size", "10"),
-                ("page", "1"),
-            ],
-        )
+        "track.search",
+        [
+            ("q", search_term),
+            ("page_size", "10"),
+            ("page", "1"),
+        ],
+    )
     status_code = r.json()["message"]["header"]["status_code"]
     if status_code != 200:
         self.logger.warning(f"Got status code {status_code} for {search_term}")
@@ -77,7 +95,7 @@ def _get_lrc_musixmatch(self, t):
     body = r.json()["message"]["body"]
     tracks = body["track_list"]
     cmp_key = lambda _: f"{_['track']['track_name']} {_['track']['artist_name']}"
-    track_len_diff = lambda _: - abs(_["track"]["track_length"] - int(t.length)/1000)
+    track_len_diff = lambda _: -abs(_["track"]["track_length"] - int(t.length) / 1000)
     track = _get_best_match_with_length(tracks, search_term, cmp_key, track_len_diff)
     if not track:
         return None
@@ -86,7 +104,10 @@ def _get_lrc_musixmatch(self, t):
     track_id = track["track"]["track_id"]
     lrc = self.get_lrc_by_id(track_id)
     return lrc.synced if lrc else None
+
+
 Musixmatch.get_lrc = _get_lrc_musixmatch
+
 
 def _get_lrc_lrclib(self, t):
     search_term = f"{t.title} {t.artist}"
@@ -98,14 +119,20 @@ def _get_lrc_lrclib(self, t):
     if not tracks:
         return None
     tracks = _sort_results_with_length(
-        tracks, search_term, lambda _: f'{_["artistName"]} - {_["trackName"]}', lambda _: 0 - abs(_["duration"] - int(t.length)/1000)
+        tracks,
+        search_term,
+        lambda _: f'{_["artistName"]} - {_["trackName"]}',
+        lambda _: 0 - abs(_["duration"] - int(t.length) / 1000),
     )
     _id = None
     for track in tracks:
         if (track.get("syncedLyrics", "") or "").strip():
             return track.get("syncedLyrics", track.get("plainLyrics"))
     return None
+
+
 Lrclib.get_lrc = _get_lrc_lrclib
+
 
 def _search_track_netease(self, t):
     search_term = f"{t.title} {t.artist}"
@@ -115,11 +142,19 @@ def _search_track_netease(self, t):
     if not results:
         return None
     cmp_key = lambda _: f"{_.get('name')} {_.get('artists')[0].get('name')}"
-    track = _get_best_match_with_length(results, search_term, cmp_key, lambda _: 0 - abs(_["duration"]/1000 - int(t.length)/1000))
+    track = _get_best_match_with_length(
+        results,
+        search_term,
+        cmp_key,
+        lambda _: 0 - abs(_["duration"] / 1000 - int(t.length) / 1000),
+    )
     self.session.cookies.update(response.cookies)
     self.session.headers.update({"referer": response.url})
     return track
+
+
 NetEase.search_track = _search_track_netease
+
 
 def _get_lrc_netease(self, t):
     track = self.search_track(t)
@@ -127,18 +162,29 @@ def _get_lrc_netease(self, t):
         return None
     lrc = self.get_lrc_by_id(track["id"])
     return lrc.synced if lrc else None
+
+
 NetEase.get_lrc = _get_lrc_netease
+
 
 def _get_lrc_deezer(self, t):
     search_term = f"{t.title} {t.artist}"
     url = self.SEARCH_ENDPOINT + search_term.replace(" ", "+")
     search_results = self.session.get(url).json()
     cmp_key = lambda _: f"{_.get('title')} {_.get('artist').get('name')}"
-    track = _get_best_match_with_length(search_results.get("data", []), search_term, cmp_key, lambda _: 0 - abs(_["duration"] - int(t.length)/1000))
+    track = _get_best_match_with_length(
+        search_results.get("data", []),
+        search_term,
+        cmp_key,
+        lambda _: 0 - abs(_["duration"] - int(t.length) / 1000),
+    )
     if not track:
         return None
     return self.get_lrc_by_id(track["id"])
+
+
 Deezer.get_lrc = _get_lrc_deezer
+
 
 def _get_lrc_megalobiz(self, t):
     search_term = f"{t.title} {t.artist}"
@@ -159,26 +205,27 @@ def _get_lrc_megalobiz(self, t):
             continue
         length = match.group(2)
         length = int(length[1:3]) * 60 + int(length[4:6]) + int(length[7:9]) / 100
-        candidates.append({
-            "raw": a,
-            "name": match.group(1),
-            "length": length
-        })
-    a_tag = _get_best_match_with_length(candidates, search_term, lambda _: _["name"], lambda _: _["length"] - int(t.length)/1000)
+        candidates.append({"raw": a, "name": match.group(1), "length": length})
+    a_tag = _get_best_match_with_length(
+        candidates,
+        search_term,
+        lambda _: _["name"],
+        lambda _: _["length"] - int(t.length) / 1000,
+    )
     if not a_tag:
         return None
     # Scraping from the LRC page
     lrc_id = a_tag["raw"]["href"].split(".")[-1]
     soup = generate_bs4_soup(self.session, self.ROOT_URL + a_tag["raw"]["href"])
     return soup.find("div", {"id": f"lrc_{lrc_id}_details"}).get_text()
+
+
 Megalobiz.get_lrc = _get_lrc_megalobiz
 
 logger = logging.getLogger(__name__)
 
 
-def _is_lrc_valid_crude(
-    lrc, allow_plain_format=False, check_translation=False
-) :
+def _is_lrc_valid_crude(lrc, allow_plain_format=False, check_translation=False):
     if not lrc:
         return False
     lines = lrc.split("\n")
@@ -205,7 +252,7 @@ def _search(
     lang=None,
     enhanced=False,
 ):
-    _providers = [] 
+    _providers = []
     for provider in providers:
         if provider.lower() == "musixmatch":
             _providers.append(Musixmatch(lang=lang, enhanced=enhanced))
@@ -253,6 +300,7 @@ def _search(
         return None
     return lrc
 
+
 syncedlyrics.search = _search
 
-print("Patched syncedlyrics")
+logging.info("Patched syncedlyrics")
