@@ -35,7 +35,7 @@
 
 ### 🛠 Setup
 
-#### (Optional) Spicetify Setup
+#### Spicetify Setup
 - With Spicetify, we can directly get playback information from desktop app, which provides much more precise information.
 - Installation of Spicetify: [Refer to this.](https://spicetify.app/docs/advanced-usage/installation/)
 - Add [this modified webnowplaying extension](webnowplaying.js) to the extension folder and then update and apply the config. [Refer to this.](https://spicetify.app/docs/advanced-usage/extensions)
