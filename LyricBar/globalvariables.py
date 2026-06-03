@@ -82,8 +82,8 @@ if os.path.exists("settings.yaml"):
 
 if "Appearance" in config:
     if (
-        "Taksbar Height" in config["Appearance"]
-        and str(config["Appearance"]["Taksbar Height"]).isdigit()
+        "Taskbar Height" in config["Appearance"]
+        and str(config["Appearance"]["Taskbar Height"]).isdigit()
     ):
         TAKSBAR_HEIGHT = int(config["Appearance"]["Taskbar Height"])
     if (
