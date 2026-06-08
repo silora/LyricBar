@@ -2,7 +2,7 @@ Proxy:
   Host: "http://localhost"
   Port: 7890
 
-Apperance:
+Appearance:
   Taskbar Height: 70
   # Adjust this so the system tray icons are not covered
   Leftout Width: 600
@@ -34,7 +34,7 @@ Playing Info:
   # Available Playing Info Options: Spicetify, System
   # System: Use Windows Runtime API to get the current playing track. You can call them as frequently as you want, but the actual song progress information is updated every four second (at least on my pc, you are welcomed to test it on yours. I dont know whether its a winsdk thing). Song changes are instant, pausing can sometimes be delayed for whatever reason. Support many audio players. DOES NOT PROVIDE TRACK ID.
   # Spicetify: (Recommended) Uses Spicetify websocket to get the current playing track. It's much more responsive than Spotify API, but it's only available for Spotify desktop client with Spicetify installed. DOES PROVIDE TRACK ID.
-  
+
   Provider: Spicetify
   # If use Spicetify, you need to set the Spicetify websocket port. Default port is 8974 with provided script.
   Spicetify Port: 8974
@@ -51,6 +51,3 @@ Themes:
 
   # Format "{relative file path minus '.py'} - {theme name}"
   Default: "Default - LyricBar theme"
-
-
-
