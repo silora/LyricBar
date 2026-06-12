@@ -1,4 +1,4 @@
-![Layout](readme_resources/titlebar.gif)
+
 
 <div align="center">
   
@@ -9,6 +9,14 @@
 <div align="right">
 
 *<p style="color:grey">· · · · · · · · Taskbar Lyrics For Spotify and More</p>*
+
+</div>
+
+![](readme_resources/random.gif)
+
+<div align="right">
+
+##### *<p style="color:grey">(Fonts not provided)</p>*
 
 </div>
 
@@ -119,32 +127,6 @@
         - Outline Color
         - Filling Color/Image
     - Line Formatter
-
-----
-
-## 🎨 Gallery
-
-<!-- | Default |
-|:-------:|
-| ![Default](readme_resources/gifs/janeremover_magiciwantu.gif) |
-| **Provided Presets** |
-| ![](readme_resources/gifs/adriannelenker_notalotjustforever.gif) |
-| ![](readme_resources/gifs/bjork_hyperballad.gif)|
-| ![](readme_resources/gifs/fkatwigs_eusexua.gif) |
-| ![](readme_resources/gifs/frankocean_godspeed.gif) |
-| ![](readme_resources/gifs/lanadelreymarinersaprtmentcomplex.gif) |
-| ![](readme_resources/gifs/newjeans_ditto.gif) |
-| ![](readme_resources/gifs/phoebebridgers_saviorcomplex.gif) |
-| ![](readme_resources/gifs/rosalia_monomami.gif) |
-| ![](readme_resources/gifs/soccermommy_yellowisthecolorofhereyes.gif) |
-| ![](readme_resources/gifs/sufjanstevens_casmirpulaskiday.gif) |
-| ![](readme_resources/gifs/troyesivan_howwtostaywithyou.gif) |
-| ![](readme_resources/gifs/tylerthecreator_sticky.gif) |
-| *and more...*| -->
-
-![](readme_resources/random.gif)
-
-- *Font not provided*
 
 ----
 
