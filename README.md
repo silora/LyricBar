@@ -2,9 +2,13 @@
 
 <div align="center">
   
-# <img src="readme_resources/title.png" alt="Icon" width="200"/>
+# <img src="readme_resources/title.png" alt="Icon" width="800"/>
 
-*<p style="color:grey">Taskbar Lyrics For Spotify and More</p>*
+</div>
+
+<div align="right">
+
+*<p style="color:grey">· · · · · · · · Taskbar Lyrics For Spotify and More</p>*
 
 </div>
 
